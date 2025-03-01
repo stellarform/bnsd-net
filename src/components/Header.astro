@@ -77,11 +77,28 @@ import { SITE_TITLE } from '../consts';
 	.social-links,
 	.social-links a {
 		display: flex;
-
 	}
 	@media (max-width: 1500px) {
 		.social-links {
 			display: none;
 		}
 	}
+
+	.icon-container {
+		display: flex;
+		justify-content: center; /* Centers horizontally */
+		align-items: center; /* Centers vertically */
+		gap: 10px; /* Adjust space between icons */
+		height: 100vh; /* Full height of the viewport */
+	}
 </style>
+
+<div class="icon-container">
+	<svg viewBox="0 0 32 32" aria-hidden="true" width="50" height="50">
+		<path fill="currentColor" d="..." />
+	</svg>
+
+	<svg viewBox="0 0 32 32" aria-hidden="true" width="50" height="50">
+		<path fill="currentColor" d="..." />
+	</svg>
+</div>
