@@ -31,12 +31,11 @@
   text-transform: uppercase;
 }
 @font-face {
-  font-family: "Forma";
-  src: url("/fonts/FormaDJRText-Black-Testing.woff") format("woff");
+  font-family: "Shafarik";
+  src: url("/fonts/Shafarik-Regular.ttf") format("ttf");
   font-weight: 700;
   font-style: normal;
   font-display: swap;
-  text-transform: uppercase;
 }
 body {
   font-family: "Atkinson", sans-serif;
