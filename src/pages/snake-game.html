@@ -26,18 +26,25 @@
         canvas {
             background-color: #EAF6CF;
             border-radius: 10px;
-            transition: background-color 0.3s ease; /* Smooth transition for background change */
-            position: relative;  /* Position for button centering */
+            transition: background-color 0.3s ease;
+            position: relative;
         }
         #startBtn, #restartBtn {
+            width: 80px;
+            height: 80px;
+            background-color: #EAF6CF;
+            border: none;
+            border-radius: 5px;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            padding: 10px 20px;
-            font-size: 18px;
-            cursor: pointer;
-            corner-radius: 25px;
         }
         #restartBtn {
             display: none;
@@ -52,6 +59,7 @@
             padding: 20px;
             border-radius: 15px;
             box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.3);
+            position: relative;
         }
         .button {
             width: 80px;
@@ -71,7 +79,7 @@
     <div class="device">
         <div class="game-container">
             <canvas id="gameCanvas" width="300" height="300"></canvas>
-            <button id="startBtn">Start Game</button>
+            <button id="startBtn">Start</button>
             <button id="restartBtn" onclick="restartGame()">Restart</button>
         </div>
         <div class="controller">
@@ -165,4 +173,5 @@
     </script>
 </body>
 </html>
+
 
