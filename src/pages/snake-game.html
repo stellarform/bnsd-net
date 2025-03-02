@@ -13,11 +13,16 @@
             justify-content: center;
             height: 100vh;
         }
+        .game-container {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
         canvas {
             background-color: black;
-            position: relative;
         }
-        #startBtn {
+        #startBtn, #restartBtn {
             position: absolute;
             top: 50%;
             left: 50%;
@@ -25,6 +30,9 @@
             padding: 10px 20px;
             font-size: 18px;
             cursor: pointer;
+        }
+        #restartBtn {
+            display: none;
         }
         .controller {
             display: grid;
@@ -35,6 +43,8 @@
             background: gray;
             padding: 10px;
             border-radius: 10px;
+            position: absolute;
+            bottom: -120px;
         }
         .button {
             width: 80px;
@@ -50,24 +60,26 @@
     </style>
 </head>
 <body>
-    <div style="position: relative;">
+    <div class="game-container">
         <canvas id="gameCanvas" width="300" height="300"></canvas>
         <button id="startBtn">Start Game</button>
-    </div>
-    <div class="controller">
-        <div></div>
-        <div class="button" onclick="changeDirection('UP')">▲</div>
-        <div></div>
-        <div class="button" onclick="changeDirection('LEFT')">◄</div>
-        <div></div>
-        <div class="button" onclick="changeDirection('RIGHT')">►</div>
-        <div></div>
-        <div class="button" onclick="changeDirection('DOWN')">▼</div>
+        <button id="restartBtn" onclick="restartGame()">Restart</button>
+        <div class="controller">
+            <div></div>
+            <div class="button" onclick="changeDirection('UP')">▲</div>
+            <div></div>
+            <div class="button" onclick="changeDirection('LEFT')">◄</div>
+            <div></div>
+            <div class="button" onclick="changeDirection('RIGHT')">►</div>
+            <div></div>
+            <div class="button" onclick="changeDirection('DOWN')">▼</div>
+        </div>
     </div>
     <script>
         let canvas = document.getElementById("gameCanvas");
         let ctx = canvas.getContext("2d");
         let startBtn = document.getElementById("startBtn");
+        let restartBtn = document.getElementById("restartBtn");
         let snake = [{ x: 150, y: 150 }];
         let direction = "RIGHT";
         let food = { x: 100, y: 100 };
@@ -83,7 +95,7 @@
             moveSnake();
             if (checkCollision()) {
                 running = false;
-                alert("Game Over");
+                restartBtn.style.display = "block";
             } else {
                 setTimeout(drawGame, 100);
             }
@@ -123,11 +135,19 @@
         });
         
         startBtn.addEventListener("click", () => {
+            startBtn.style.display = "none";
             running = true;
             drawGame();
         });
+        
+        function restartGame() {
+            snake = [{ x: 150, y: 150 }];
+            direction = "RIGHT";
+            food = { x: 100, y: 100 };
+            running = true;
+            restartBtn.style.display = "none";
+            drawGame();
+        }
     </script>
 </body>
 </html>
-
-
