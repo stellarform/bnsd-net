@@ -7,46 +7,54 @@
   <style>
     body {
       font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      background-color: #87CEEB; /* Blue background */
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
-      margin: 0;
-      background-color: #87CEEB;
     }
+
     .game-container {
       text-align: center;
-    }
-    .course {
       width: 800px;
-      height: 200px;
       position: relative;
-      background-color: #228B22;
-      border: 2px solid #006400;
-      margin-bottom: 20px;
+    }
+
+    /* The entire course container */
+    .course {
+      width: 100%;
+      height: 60vh; /* Fills the bottom of the screen */
+      position: relative;
+      background-color: #228B22; /* Green background */
       border-radius: 10px;
       overflow: hidden;
     }
-    .hole {
-      position: absolute;
-      top: 50px;
-      left: 750px;
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background-color: neon;
-      box-shadow: 0 0 10px 5px #00FF00;
-    }
+
+    /* The ball */
     .ball {
       position: absolute;
-      top: 180px; /* Ball starts resting on the top edge */
-      left: 50px;
+      top: 0;
+      left: 50px; /* Starting position of the ball */
       width: 20px;
       height: 20px;
       border-radius: 50%;
       background-color: white;
       transition: left 0.02s linear, top 0.02s linear;
     }
+
+    /* Hole representation */
+    .hole {
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background-color: #00FF00;
+      box-shadow: 0 0 15px 5px #00FF00;
+    }
+
+    /* Power bar */
     .power-bar {
       width: 200px;
       height: 20px;
@@ -54,6 +62,7 @@
       margin-top: 10px;
       position: relative;
     }
+
     .power-fill {
       width: 0%;
       height: 100%;
@@ -62,6 +71,7 @@
       top: 0;
       left: 0;
     }
+
     .slider {
       width: 20px;
       height: 20px;
@@ -71,6 +81,8 @@
       top: 0;
       cursor: pointer;
     }
+
+    /* Direction meter */
     .direction-meter {
       margin-top: 10px;
       width: 200px;
@@ -78,6 +90,7 @@
       background-color: #ddd;
       position: relative;
     }
+
     .direction-indicator {
       width: 10px;
       height: 20px;
@@ -87,30 +100,36 @@
       left: 50%;
       transform: translateX(-50%);
     }
+
     .level-info {
       font-size: 18px;
       margin-top: 10px;
     }
+
   </style>
 </head>
 <body>
   <div class="game-container">
     <h1>Side View Golf Putting Game</h1>
 
+    <!-- The course -->
     <div class="course" id="course">
-      <div class="hole"></div>
-      <div class="ball"></div>
+      <div class="hole" id="hole"></div>
+      <div class="ball" id="ball"></div>
     </div>
 
+    <!-- Power bar -->
     <div class="power-bar" id="powerBar">
       <div class="power-fill" id="powerFill"></div>
       <div class="slider" id="slider"></div>
     </div>
 
+    <!-- Direction meter -->
     <div class="direction-meter" id="directionMeter">
       <div class="direction-indicator" id="directionIndicator"></div>
     </div>
 
+    <!-- Level info -->
     <div class="level-info">
       <p>Level: <span id="level">1</span></p>
       <button onclick="puttBall()">Putt the Ball</button>
@@ -121,18 +140,19 @@
     let level = 1;
     const course = document.getElementById('course');
     const ball = document.querySelector('.ball');
-    const hole = document.querySelector('.hole');
+    const hole = document.getElementById('hole');
     const powerBar = document.getElementById('powerBar');
     const powerFill = document.getElementById('powerFill');
     const slider = document.getElementById('slider');
-
     const directionMeter = document.getElementById('directionMeter');
     const directionIndicator = document.getElementById('directionIndicator');
 
     let isDragging = false;
     let power = 0;
     let direction = 0; // Direction in degrees
+
     let courseSlope = 0;
+    let courseTopography = [];
 
     // Update the power bar and shot arc
     slider.addEventListener('mousedown', function (event) {
@@ -162,27 +182,53 @@
       directionIndicator.style.left = `${directionX - directionIndicator.offsetWidth / 2}px`;
     });
 
+    // Generate random wavy line for the top edge of the course
+    function generateCourseTopography() {
+      courseTopography = [];
+      const waveLength = 30; // Frequency of waves
+      const amplitude = 15; // Height of waves
+
+      // Create a smooth wavy line
+      for (let i = 0; i < course.offsetWidth; i++) {
+        const y = amplitude * Math.sin((i / waveLength) + Math.random()) + 100;
+        courseTopography.push({ x: i, y: y });
+      }
+
+      // Create SVG path for the wavy top edge
+      const pathData = courseTopography.map((point, index) => {
+        return index === 0 ? `M${point.x},${point.y}` : `L${point.x},${point.y}`;
+      }).join(' ');
+
+      const pathElement = `<path d="${pathData}" fill="none" stroke="#006400" stroke-width="3"/>`;
+      course.innerHTML = pathElement; // Add wavy path to course
+
+      hole.style.top = courseTopography[courseTopography.length - 1].y - 20 + 'px'; // Set hole position
+
+      ball.style.top = courseTopography[0].y + 'px'; // Set initial ball position
+    }
+
+    // Putt the ball
     function puttBall() {
       const ballPosition = ball.getBoundingClientRect();
       const holePosition = hole.getBoundingClientRect();
 
-      // Randomize the slope every level
-      courseSlope = Math.random() * 20 - 10; // Random slope between -10 and 10
+      // Calculate direction and distance
       const distanceToHole = holePosition.left - ballPosition.left;
-      const powerFactor = (power / 100) * distanceToHole + courseSlope;
+      const powerFactor = (power / 100) * distanceToHole;
+      const velocity = powerFactor / 10;
 
       let ballX = 50;
-      let ballY = 180; // Starting position on the top edge
-
-      let velocity = powerFactor / 10; // Control the speed of the ball
+      let ballY = courseTopography[0].y;
 
       let interval = setInterval(function () {
-        // Update the ball's position based on shot direction and slope
-        ballX += Math.cos(direction * (Math.PI / 180)) * velocity; // Direction factor
-        ballY += Math.sin(courseSlope / 100) * velocity; // Apply slope effect
+        // Move the ball based on direction and velocity
+        ballX += Math.cos(direction * (Math.PI / 180)) * velocity;
+        ballY += Math.sin(courseSlope / 100) * velocity;
 
+        // Make ball follow the wavy course
+        const newY = courseTopography[Math.floor(ballX)].y;
         ball.style.left = ballX + 'px';
-        ball.style.top = ballY + 'px';
+        ball.style.top = newY + 'px';
 
         // Check if ball is near the hole
         if (ballX >= holePosition.left - 20 && ballY >= holePosition.top - 20) {
@@ -192,29 +238,25 @@
           resetBall();
           setTimeout(() => {
             alert('You made the putt! Next level!');
-            updateCourse();
+            generateCourseTopography();
           }, 500);
         }
       }, 20);
     }
 
+    // Reset ball position
     function resetBall() {
       ball.style.left = '50px';
-      ball.style.top = '180px';
+      ball.style.top = courseTopography[0].y + 'px';
     }
 
-    function updateCourse() {
-      // Change the course topography randomly for each level
-      course.style.backgroundColor = getRandomColor();
-    }
+    // Initialize the first course
+    generateCourseTopography();
 
-    function getRandomColor() {
-      const colors = ['#228B22', '#32CD32', '#006400', '#556B2F'];
-      return colors[Math.floor(Math.random() * colors.length)];
-    }
   </script>
 </body>
 </html>
+
 
 
 
