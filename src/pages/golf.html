@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Simple Golf Putting Game with Power Bar</title>
+  <title>Side View Golf Putting Game</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -20,15 +20,17 @@
     .course {
       width: 800px;
       height: 400px;
-      background-color: #228B22;
       position: relative;
+      background-color: #228B22;
       border: 2px solid #006400;
       margin-bottom: 20px;
+      border-radius: 10px;
+      overflow: hidden;
     }
     .hole {
       position: absolute;
       top: 250px;
-      left: 700px;
+      left: 750px;
       width: 40px;
       height: 40px;
       border-radius: 50%;
@@ -67,13 +69,25 @@
       top: 0;
       cursor: pointer;
     }
+    .arc {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 2px;
+      background-color: rgba(255, 0, 0, 0.7);
+      transform-origin: left center;
+    }
+    .level-info {
+      font-size: 18px;
+      margin-top: 10px;
+    }
   </style>
 </head>
 <body>
   <div class="game-container">
-    <h1>Golf Putting Game</h1>
+    <h1>Side View Golf Putting Game</h1>
 
-    <div class="course">
+    <div class="course" id="course">
       <div class="hole"></div>
       <div class="ball"></div>
     </div>
@@ -83,23 +97,33 @@
       <div class="slider" id="slider"></div>
     </div>
 
-    <button onclick="puttBall()">Putt the Ball</button>
+    <div class="level-info">
+      <p>Level: <span id="level">1</span></p>
+      <button onclick="puttBall()">Putt the Ball</button>
+    </div>
   </div>
 
   <script>
+    let level = 1;
+    const course = document.getElementById('course');
+    const ball = document.querySelector('.ball');
+    const hole = document.querySelector('.hole');
     const powerBar = document.getElementById('powerBar');
     const powerFill = document.getElementById('powerFill');
     const slider = document.getElementById('slider');
-    const ball = document.querySelector('.ball');
-    const hole = document.querySelector('.hole');
+    const arc = document.createElement('div');
+    arc.classList.add('arc');
+    course.appendChild(arc);
 
     let isDragging = false;
     let power = 0;
+    let courseSlope = 0;
 
-    slider.addEventListener('mousedown', function(event) {
+    // Update the power bar and shot arc
+    slider.addEventListener('mousedown', function (event) {
       isDragging = true;
       document.addEventListener('mousemove', dragSlider);
-      document.addEventListener('mouseup', function() {
+      document.addEventListener('mouseup', function () {
         isDragging = false;
         document.removeEventListener('mousemove', dragSlider);
       });
@@ -113,28 +137,64 @@
         slider.style.left = newLeft + 'px';
         power = (newLeft / (powerBar.offsetWidth - slider.offsetWidth)) * 100;
         powerFill.style.width = power + '%';
+        updateShotArc();
       }
+    }
+
+    function updateShotArc() {
+      const arcLength = power * 3; // Adjust length based on power
+      const arcAngle = Math.min(power * 1.5, 45); // Limit arc angle
+
+      arc.style.width = arcLength + 'px';
+      arc.style.transform = `rotate(${arcAngle}deg)`;
+      arc.style.top = '150px'; // Adjust arc height
     }
 
     function puttBall() {
       const ballPosition = ball.getBoundingClientRect();
       const holePosition = hole.getBoundingClientRect();
 
+      // Randomize the slope every level
+      courseSlope = Math.random() * 50 - 25; // Random slope between -25 and 25
+
       const distanceToHole = holePosition.left - ballPosition.left;
-      const powerFactor = (power / 100) * distanceToHole;
+      const powerFactor = (power / 100) * distanceToHole + courseSlope;
 
       let ballX = 50;
       let ballY = 350;
 
-      let interval = setInterval(function() {
+      let interval = setInterval(function () {
         ballX += powerFactor / 10;
+        ballY -= Math.sin(courseSlope / 100) * 2; // Apply slope effect
         ball.style.left = ballX + 'px';
+        ball.style.top = ballY + 'px';
 
         if (ballX >= holePosition.left - 20) {
           clearInterval(interval);
-          alert('You made the putt! Congratulations!');
+          level++;
+          document.getElementById('level').innerText = level;
+          resetBall();
+          setTimeout(() => {
+            alert('You made the putt! Next level!');
+            updateCourse();
+          }, 500);
         }
       }, 20);
+    }
+
+    function resetBall() {
+      ball.style.left = '50px';
+      ball.style.top = '350px';
+    }
+
+    function updateCourse() {
+      // Change the course topography randomly for each level
+      course.style.backgroundColor = getRandomColor();
+    }
+
+    function getRandomColor() {
+      const colors = ['#228B22', '#32CD32', '#006400', '#556B2F'];
+      return colors[Math.floor(Math.random() * colors.length)];
     }
   </script>
 </body>
