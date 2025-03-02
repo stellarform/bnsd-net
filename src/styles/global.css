@@ -25,10 +25,9 @@
 @font-face {
   font-family: "Forma";
   src: url("/fonts/FormaDJRText-Black-Testing.woff") format("woff");
-  font-weight: 699;
+  font-weight: 700;
   font-style: normal;
   font-display: swap;
-  text-transform: uppercase;
 }
 body {
   font-family: "Poppins", sans-serif;
