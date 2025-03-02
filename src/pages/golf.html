@@ -22,7 +22,6 @@
       position: relative;
     }
 
-    /* The entire course container */
     .course {
       width: 100%;
       height: 60vh; /* Fills the bottom of the screen */
@@ -32,11 +31,10 @@
       overflow: hidden;
     }
 
-    /* The ball */
     .ball {
       position: absolute;
       top: 0;
-      left: 50px; /* Starting position of the ball */
+      left: 50px;
       width: 20px;
       height: 20px;
       border-radius: 50%;
@@ -44,7 +42,6 @@
       transition: left 0.02s linear, top 0.02s linear;
     }
 
-    /* Hole representation - cross section of a cup */
     .hole {
       position: absolute;
       width: 40px;
@@ -54,10 +51,9 @@
       border: 5px solid #006400; /* Rim effect */
       box-shadow: 0 0 15px 5px #00FF00;
       bottom: 0;
-      left: calc(100% - 45px); /* Place it at the right edge */
+      left: calc(100% - 45px);
     }
 
-    /* Power bar */
     .power-bar {
       width: 200px;
       height: 20px;
@@ -85,7 +81,6 @@
       cursor: pointer;
     }
 
-    /* Direction meter */
     .direction-meter {
       margin-top: 10px;
       width: 200px;
@@ -108,31 +103,26 @@
       font-size: 18px;
       margin-top: 10px;
     }
-
   </style>
 </head>
 <body>
   <div class="game-container">
     <h1>Side View Golf Putting Game</h1>
 
-    <!-- The course -->
     <div class="course" id="course">
       <div class="hole" id="hole"></div>
       <div class="ball" id="ball"></div>
     </div>
 
-    <!-- Power bar -->
     <div class="power-bar" id="powerBar">
       <div class="power-fill" id="powerFill"></div>
       <div class="slider" id="slider"></div>
     </div>
 
-    <!-- Direction meter -->
     <div class="direction-meter" id="directionMeter">
       <div class="direction-indicator" id="directionIndicator"></div>
     </div>
 
-    <!-- Level info -->
     <div class="level-info">
       <p>Level: <span id="level">1</span></p>
       <button onclick="puttBall()">Putt the Ball</button>
@@ -259,6 +249,7 @@
   </script>
 </body>
 </html>
+
 
 
 
