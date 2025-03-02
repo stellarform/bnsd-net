@@ -137,6 +137,7 @@ hr {
 @media (max-width: 720px) {
   .social-icons svg {
         display: block;  /* Ensure the icons are visible */
+  }
   body {
     font-size: 18px;
   }
