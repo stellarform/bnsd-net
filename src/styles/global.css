@@ -151,8 +151,15 @@ hr {
 
   main {
     padding: 1em;
+  }
+
+  h2 {
+     font-size: 18pt;
 }
 
+main {
+  padding: 1em;
+}
 .sr-only {
   border: 0;
   padding: 0;
