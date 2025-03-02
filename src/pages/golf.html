@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale: 1.0">
-    <title>Golf Game with Shot Arc</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Golf Game with Slopes</title>
     <style>
         body, html {
             margin: 0;
@@ -34,7 +34,7 @@
         .hole {
             position: absolute;
             right: 5%;
-            bottom: 20%;
+            bottom: 5%;
             width: 30px;
             height: 30px;
             background-color: #333;
@@ -129,9 +129,12 @@
         let strokes = 0;
         let ballPosition = { x: 5, y: 25 }; // Relative to screen width/height
         let ballSpeed = { x: 0, y: 0 };
-        let holePosition = { x: 95, y: 20 };
+        let holePosition = { x: 95, y: 5 }; // Hole is positioned at the bottom of the green
         let gameOver = false;
         
+        let slopes = []; // Holds the slopes of the green
+
+        // Function to reset the game and load a new level
         function resetGame() {
             level++;
             strokes = 0;
@@ -145,26 +148,54 @@
             ball.style.bottom = `${ballPosition.y}%`;
         }
 
+        // Update the scoreboard
         function updateScoreboard() {
             levelDisplay.textContent = `Level: ${level}`;
             strokesDisplay.textContent = `Strokes: ${strokes}`;
         }
 
+        // Set random slopes for each level
         function setRandomTopography() {
-            let groundHeight = Math.random() * 30 + 10; // Randomize ground height for variety
-            document.getElementById("ground").style.height = `${groundHeight}%`;
+            slopes = [];
+            const numSlopes = 5 + Math.floor(Math.random() * 5); // Random number of slopes
+            for (let i = 0; i < numSlopes; i++) {
+                let startPos = Math.random() * 100; // Start position of the slope
+                let endPos = startPos + Math.random() * 20; // End position of the slope
+                let slopeAngle = Math.random() * 30 - 15; // Angle of the slope (-15 to +15 degrees)
+                slopes.push({ startPos, endPos, slopeAngle });
+            }
         }
 
+        // Update the flag to reflect the current hole number
         function updateFlag() {
             flag.textContent = `Hole ${level}`;
         }
 
+        // Update the ball's position based on its speed and slope
         function updateBallPosition() {
             ballPosition.x += ballSpeed.x;
             ballPosition.y += ballSpeed.y;
+
+            // Check for slope effects
+            for (let slope of slopes) {
+                if (ballPosition.x >= slope.startPos && ballPosition.x <= slope.endPos) {
+                    let slopeAngle = slope.slopeAngle * (Math.PI / 180);
+                    let slopeFactor = Math.cos(slopeAngle);
+                    ballSpeed.x *= slopeFactor; // Speed up or slow down the ball
+                    ballSpeed.y *= slopeFactor;
+                }
+            }
+
+            // Apply friction to the ball's speed
+            if (Math.abs(ballSpeed.x) > 0.01 || Math.abs(ballSpeed.y) > 0.01) {
+                ballSpeed.x *= 0.99;
+                ballSpeed.y *= 0.99;
+            }
+
             ball.style.left = `${ballPosition.x}%`;
             ball.style.bottom = `${ballPosition.y}%`;
 
+            // Check if ball reaches hole
             if (ballPosition.x >= holePosition.x && Math.abs(ballPosition.y - holePosition.y) < 5) {
                 alert("Hole in one!");
                 resetGame();
@@ -174,13 +205,9 @@
                 gameOver = true;
                 alert("Game Over!");
             }
-
-            if (Math.abs(ballSpeed.x) > 0.01 || Math.abs(ballSpeed.y) > 0.01) {
-                ballSpeed.x *= 0.99; // Friction effect
-                ballSpeed.y *= 0.99; // Friction effect
-            }
         }
 
+        // Draw the shot arc preview based on current power and direction
         function drawShotArc() {
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
@@ -211,6 +238,7 @@
             ctx.stroke();
         }
 
+        // Hit the ball based on power and direction
         function hitBall() {
             if (gameOver) return;
 
@@ -225,6 +253,7 @@
             updateScoreboard();
         }
 
+        // Run game update every frame
         setRandomTopography();
         updateFlag();
 
@@ -245,4 +274,5 @@
     </script>
 </body>
 </html>
+
 
