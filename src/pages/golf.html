@@ -127,9 +127,9 @@
         
         let level = 1;
         let strokes = 0;
-        let ballPosition = { x: 5, y: 25 }; // Relative to screen width/height
-        let ballSpeed = { x: 0, y: 0 };
-        let holePosition = { x: 95, y: 5 }; // Hole is positioned at the bottom of the green
+        let ballPosition = { x: 5, y: 25 }; // Relative to screen width/height (ball on top edge)
+        let ballSpeed = { x: 0, y: 0 }; // No vertical speed initially
+        let holePosition = { x: 95, y: 25 }; // Hole is positioned at the bottom of the green
         let gameOver = false;
         
         let slopes = []; // Holds the slopes of the green
@@ -138,8 +138,8 @@
         function resetGame() {
             level++;
             strokes = 0;
-            ballPosition = { x: 5, y: 25 };
-            ballSpeed = { x: 0, y: 0 };
+            ballPosition = { x: 5, y: 25 }; // Ball on the left side of the green
+            ballSpeed = { x: 0, y: 0 }; // No initial vertical speed
             gameOver = false;
             updateScoreboard();
             setRandomTopography();
@@ -174,29 +174,25 @@
         // Update the ball's position based on its speed and slope
         function updateBallPosition() {
             ballPosition.x += ballSpeed.x;
-            ballPosition.y += ballSpeed.y;
-
-            // Check for slope effects
+            
+            // Check for slope effects (only affects horizontal speed)
             for (let slope of slopes) {
                 if (ballPosition.x >= slope.startPos && ballPosition.x <= slope.endPos) {
                     let slopeAngle = slope.slopeAngle * (Math.PI / 180);
                     let slopeFactor = Math.cos(slopeAngle);
-                    ballSpeed.x *= slopeFactor; // Speed up or slow down the ball
-                    ballSpeed.y *= slopeFactor;
+                    ballSpeed.x *= slopeFactor; // Speed up or slow down the ball horizontally
                 }
             }
 
             // Apply friction to the ball's speed
-            if (Math.abs(ballSpeed.x) > 0.01 || Math.abs(ballSpeed.y) > 0.01) {
-                ballSpeed.x *= 0.99;
-                ballSpeed.y *= 0.99;
+            if (Math.abs(ballSpeed.x) > 0.01) {
+                ballSpeed.x *= 0.99; // Slow down slightly over time
             }
 
             ball.style.left = `${ballPosition.x}%`;
-            ball.style.bottom = `${ballPosition.y}%`;
 
             // Check if ball reaches hole
-            if (ballPosition.x >= holePosition.x && Math.abs(ballPosition.y - holePosition.y) < 5) {
+            if (ballPosition.x >= holePosition.x) {
                 alert("Hole in one!");
                 resetGame();
             }
@@ -247,7 +243,6 @@
 
             let angleRad = direction * (Math.PI / 180);
             ballSpeed.x = Math.cos(angleRad) * power;
-            ballSpeed.y = Math.sin(angleRad) * power;
 
             strokes++;
             updateScoreboard();
