@@ -1,199 +1,265 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Golf Game</title>
-    <style>
-        body, html {
-            height: 100%;
-            margin: 0;
-            overflow: hidden;
-            background-color: blue;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Side View Golf Putting Game</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      background-color: #87CEEB; /* Blue background */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
 
-        /* Green rectangle (golf green) */
-        .green-rectangle {
-            position: absolute;
-            bottom: 0; /* Position at the bottom of the screen */
-            left: 0;
-            width: 100%;
-            height: 50%; /* Lower half of the screen */
-            background-color: green;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-        }
+    .game-container {
+      text-align: center;
+      width: 800px;
+      position: relative;
+    }
 
-        /* White ball */
-        .white-ball {
-            width: 50px;
-            height: 50px;
-            background-color: white;
-            border-radius: 50%;
-            position: absolute;
-            left: 100px;
-            bottom: 25px;  /* Start the ball near the bottom of the screen */
-        }
+    /* The entire course container */
+    .course {
+      width: 100%;
+      height: 60vh; /* Fills the bottom of the screen */
+      position: relative;
+      background-color: #228B22; /* Green background */
+      border-radius: 10px;
+      overflow: hidden;
+    }
 
-        /* Golf hole */
-        .golf-hole {
-            position: absolute;
-            bottom: 25px; /* Align hole with the ball's base position */
-            right: 100px;
-            width: 20px;
-            height: 20px;
-            background-color: black;
-            border-radius: 50%;
-            box-shadow: 0 0 10px 2px rgba(0, 0, 0, 0.5);
-        }
+    /* The ball */
+    .ball {
+      position: absolute;
+      top: 0;
+      left: 50px; /* Starting position of the ball */
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background-color: white;
+      transition: left 0.02s linear, top 0.02s linear;
+    }
 
-        /* Control Panel */
-        .control {
-            position: absolute;
-            top: 10%;
-            left: 50%;
-            transform: translateX(-50%);
-            text-align: center;
-        }
+    /* Hole representation - cross section of a cup */
+    .hole {
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      background-color: #00FF00;
+      border-radius: 50%;
+      border: 5px solid #006400; /* Rim effect */
+      box-shadow: 0 0 15px 5px #00FF00;
+      bottom: 0;
+      left: calc(100% - 45px); /* Place it at the right edge */
+    }
 
-        .meter {
-            width: 200px;
-            height: 20px;
-            background-color: #ddd;
-            border-radius: 10px;
-            margin-bottom: 10px;
-            overflow: hidden;
-        }
+    /* Power bar */
+    .power-bar {
+      width: 200px;
+      height: 20px;
+      background-color: #ddd;
+      margin-top: 10px;
+      position: relative;
+    }
 
-        .meter-inner {
-            height: 100%;
-            background-color: #4CAF50;
-        }
+    .power-fill {
+      width: 0%;
+      height: 100%;
+      background-color: #32CD32;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
 
-        .accuracy-meter {
-            width: 200px;
-            height: 20px;
-            background-color: #ddd;
-            border-radius: 10px;
-            margin-top: 10px;
-        }
+    .slider {
+      width: 20px;
+      height: 20px;
+      background-color: #32CD32;
+      border-radius: 50%;
+      position: absolute;
+      top: 0;
+      cursor: pointer;
+    }
 
-        .accuracy-inner {
-            height: 100%;
-            background-color: #FF6347;
-        }
+    /* Direction meter */
+    .direction-meter {
+      margin-top: 10px;
+      width: 200px;
+      height: 20px;
+      background-color: #ddd;
+      position: relative;
+    }
 
-    </style>
+    .direction-indicator {
+      width: 10px;
+      height: 20px;
+      background-color: #32CD32;
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .level-info {
+      font-size: 18px;
+      margin-top: 10px;
+    }
+
+  </style>
 </head>
 <body>
+  <div class="game-container">
+    <h1>Side View Golf Putting Game</h1>
 
-    <div class="green-rectangle">
-        <div class="white-ball"></div>
-        <div class="golf-hole"></div>
+    <!-- The course -->
+    <div class="course" id="course">
+      <div class="hole" id="hole"></div>
+      <div class="ball" id="ball"></div>
     </div>
 
-    <div class="control">
-        <label>Power Meter</label><br>
-        <input type="range" id="powerMeter" min="0" max="100" value="50">
-        <div class="meter">
-            <div class="meter-inner" id="powerMeterInner"></div>
-        </div>
-        
-        <label>Accuracy (100° to 180°)</label><br>
-        <input type="range" id="accuracyMeter" min="100" max="180" value="140">
-        <div class="accuracy-meter">
-            <div class="accuracy-inner" id="accuracyMeterInner"></div>
-        </div>
-
-        <button onclick="launchBall()">Launch Ball</button>
+    <!-- Power bar -->
+    <div class="power-bar" id="powerBar">
+      <div class="power-fill" id="powerFill"></div>
+      <div class="slider" id="slider"></div>
     </div>
 
-    <script>
-        const ball = document.querySelector('.white-ball');
-        const golfHole = document.querySelector('.golf-hole');
-        const powerMeter = document.getElementById('powerMeter');
-        const accuracyMeter = document.getElementById('accuracyMeter');
+    <!-- Direction meter -->
+    <div class="direction-meter" id="directionMeter">
+      <div class="direction-indicator" id="directionIndicator"></div>
+    </div>
 
-        const powerMeterInner = document.getElementById('powerMeterInner');
-        const accuracyMeterInner = document.getElementById('accuracyMeterInner');
+    <!-- Level info -->
+    <div class="level-info">
+      <p>Level: <span id="level">1</span></p>
+      <button onclick="puttBall()">Putt the Ball</button>
+    </div>
+  </div>
 
-        let ballPosition = { x: 100, y: 25 };  // Starting position of the ball
-        let ballSpeed = 0; // Initial speed
-        let ballDirection = 0; // Initial direction (angle)
+  <script>
+    let level = 1;
+    const course = document.getElementById('course');
+    const ball = document.querySelector('.ball');
+    const hole = document.getElementById('hole');
+    const powerBar = document.getElementById('powerBar');
+    const powerFill = document.getElementById('powerFill');
+    const slider = document.getElementById('slider');
+    const directionMeter = document.getElementById('directionMeter');
+    const directionIndicator = document.getElementById('directionIndicator');
 
-        // Update the power and accuracy meters visually
-        powerMeter.addEventListener('input', () => {
-            powerMeterInner.style.width = `${powerMeter.value}%`;
-        });
+    let isDragging = false;
+    let power = 0;
+    let direction = 0; // Direction in degrees
 
-        accuracyMeter.addEventListener('input', () => {
-            accuracyMeterInner.style.width = `${(accuracyMeter.value - 100) / 0.8}%`;
-        });
+    let courseSlope = 0;
+    let courseTopography = [];
 
-        function launchBall() {
-            // Get values from the meters
-            const power = parseInt(powerMeter.value);  // Speed of the ball
-            const accuracy = parseInt(accuracyMeter.value);  // Angle of the shot
+    // Update the power bar and shot arc
+    slider.addEventListener('mousedown', function (event) {
+      isDragging = true;
+      document.addEventListener('mousemove', dragSlider);
+      document.addEventListener('mouseup', function () {
+        isDragging = false;
+        document.removeEventListener('mousemove', dragSlider);
+      });
+    });
 
-            // Ball movement calculations
-            const radians = (accuracy - 90) * (Math.PI / 180);  // Convert accuracy to radians
-            ballSpeed = power * 0.3;  // Increase the speed multiplier for faster ball movement
-            ballDirection = radians;  // Set the direction of the shot
+    function dragSlider(event) {
+      if (isDragging) {
+        let newLeft = event.clientX - powerBar.offsetLeft - slider.offsetWidth / 2;
+        if (newLeft < 0) newLeft = 0;
+        if (newLeft > powerBar.offsetWidth - slider.offsetWidth) newLeft = powerBar.offsetWidth - slider.offsetWidth;
+        slider.style.left = newLeft + 'px';
+        power = (newLeft / (powerBar.offsetWidth - slider.offsetWidth)) * 100;
+        powerFill.style.width = power + '%';
+      }
+    }
 
-            // Ball motion animation
-            let startTime = null;
-            const moveBall = (timestamp) => {
-                if (!startTime) startTime = timestamp;
-                const elapsed = timestamp - startTime;
+    // Update direction meter
+    directionMeter.addEventListener('click', (event) => {
+      const directionX = event.clientX - directionMeter.getBoundingClientRect().left;
+      direction = (directionX / directionMeter.offsetWidth) * 100 - 50; // Maps to -50 to +50 degrees
+      directionIndicator.style.left = `${directionX - directionIndicator.offsetWidth / 2}px`;
+    });
 
-                // Update ball's position based on speed and accuracy
-                ballPosition.x += ballSpeed * Math.cos(ballDirection);
-                ballPosition.y += ballSpeed * Math.sin(ballDirection);
+    // Generate random wavy line for the top edge of the course
+    function generateCourseTopography() {
+      courseTopography = [];
+      const waveLength = 30; // Frequency of waves
+      const amplitude = 10; // Height of waves (smaller for less floating)
 
-                // Add deceleration for quick stop
-                ballSpeed *= 0.99; // Slow the ball down over time
+      // Create a smooth wavy line
+      for (let i = 0; i < course.offsetWidth; i++) {
+        const y = amplitude * Math.sin(i / waveLength) + 200;
+        courseTopography.push({ x: i, y: y });
+      }
 
-                // Update ball position on screen
-                ball.style.left = `${ballPosition.x}px`;
-                ball.style.bottom = `${ballPosition.y}px`;
+      // Create SVG path for the wavy top edge
+      const pathData = courseTopography.map((point, index) => {
+        return index === 0 ? `M${point.x},${point.y}` : `L${point.x},${point.y}`;
+      }).join(' ');
 
-                // Prevent the ball from crossing into the green area (the ground)
-                if (ballPosition.y <= 25) {
-                    ballPosition.y = 25;  // Keep ball on the green rectangle
-                    if (ballSpeed < 0.5) {
-                        ballSpeed = 0;  // Stop the ball if the speed is too low
-                    }
-                }
+      const pathElement = `<path d="${pathData}" fill="none" stroke="#006400" stroke-width="3"/>`;
+      course.innerHTML = pathElement; // Add wavy path to course
 
-                // Check if the ball reaches the golf hole
-                if (
-                    ballPosition.x > (window.innerWidth - 150) &&
-                    ballPosition.x < (window.innerWidth - 50) &&
-                    ballPosition.y > (window.innerHeight / 2 - 10) &&
-                    ballPosition.y < (window.innerHeight / 2 + 10)
-                ) {
-                    alert('You got the ball in the hole!');
-                    return;
-                }
+      hole.style.top = courseTopography[courseTopography.length - 1].y - 10 + 'px'; // Set hole position
 
-                // Stop the animation if ball goes off-screen
-                if (ballPosition.x > window.innerWidth || ballPosition.y > window.innerHeight) {
-                    return;
-                }
+      ball.style.top = courseTopography[0].y + 'px'; // Set initial ball position
+    }
 
-                // Keep moving the ball
-                requestAnimationFrame(moveBall);
-            };
+    // Putt the ball
+    function puttBall() {
+      const ballPosition = ball.getBoundingClientRect();
+      const holePosition = hole.getBoundingClientRect();
 
-            // Start the ball movement
-            requestAnimationFrame(moveBall);
+      // Calculate direction and distance
+      const distanceToHole = holePosition.left - ballPosition.left;
+      const powerFactor = (power / 100) * distanceToHole;
+      const velocity = powerFactor / 8; // Faster rolling speed
+
+      let ballX = 50;
+      let ballY = courseTopography[0].y;
+
+      let interval = setInterval(function () {
+        // Move the ball based on direction and velocity
+        ballX += Math.cos(direction * (Math.PI / 180)) * velocity;
+        ballY += Math.sin(courseSlope / 100) * velocity;
+
+        // Make ball follow the wavy course
+        const newY = courseTopography[Math.floor(ballX)].y;
+        ball.style.left = ballX + 'px';
+        ball.style.top = newY + 'px';
+
+        // Check if ball is near the hole
+        if (ballX >= holePosition.left - 20 && ballY >= holePosition.top - 20) {
+          clearInterval(interval);
+          level++;
+          document.getElementById('level').innerText = level;
+          resetBall();
+          setTimeout(() => {
+            alert('You made the putt! Next level!');
+            generateCourseTopography();
+          }, 500);
         }
-    </script>
+      }, 20);
+    }
 
+    // Reset ball position
+    function resetBall() {
+      ball.style.left = '50px';
+      ball.style.top = courseTopography[0].y + 'px';
+    }
+
+    // Initialize the first course
+    generateCourseTopography();
+
+  </script>
 </body>
 </html>
+
 
 
 
