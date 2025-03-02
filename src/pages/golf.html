@@ -1,139 +1,218 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Desert Golfing</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: #f8f3e4; /* Light sand color */
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-
-        canvas {
-            border: 1px solid black;
-            background-color: #e2c78f; /* Desert color */
-        }
-
-        #score {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            font-size: 20px;
-            color: #333;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Side View Golf Putting Game</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #87CEEB;
+    }
+    .game-container {
+      text-align: center;
+    }
+    .course {
+      width: 800px;
+      height: 200px;
+      position: relative;
+      background-color: #228B22;
+      border: 2px solid #006400;
+      margin-bottom: 20px;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .hole {
+      position: absolute;
+      top: 50px;
+      left: 750px;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background-color: neon;
+      box-shadow: 0 0 10px 5px #00FF00;
+    }
+    .ball {
+      position: absolute;
+      top: 180px; /* Ball starts resting on the top edge */
+      left: 50px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background-color: white;
+      transition: left 0.02s linear, top 0.02s linear;
+    }
+    .power-bar {
+      width: 200px;
+      height: 20px;
+      background-color: #ddd;
+      margin-top: 10px;
+      position: relative;
+    }
+    .power-fill {
+      width: 0%;
+      height: 100%;
+      background-color: #32CD32;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+    .slider {
+      width: 20px;
+      height: 20px;
+      background-color: #32CD32;
+      border-radius: 50%;
+      position: absolute;
+      top: 0;
+      cursor: pointer;
+    }
+    .direction-meter {
+      margin-top: 10px;
+      width: 200px;
+      height: 20px;
+      background-color: #ddd;
+      position: relative;
+    }
+    .direction-indicator {
+      width: 10px;
+      height: 20px;
+      background-color: #32CD32;
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    .level-info {
+      font-size: 18px;
+      margin-top: 10px;
+    }
+  </style>
 </head>
 <body>
-    <div id="score">Strokes: 0</div>
-    <canvas id="gameCanvas" width="800" height="600"></canvas>
-    <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        const scoreDiv = document.getElementById('score');
-        let strokes = 0;
+  <div class="game-container">
+    <h1>Side View Golf Putting Game</h1>
 
-        let ball = {
-            x: 100,
-            y: 300,
-            radius: 10,
-            dx: 0,
-            dy: 0,
-            color: 'white',
-        };
+    <div class="course" id="course">
+      <div class="hole"></div>
+      <div class="ball"></div>
+    </div>
 
-        let hole = {
-            x: 700,
-            y: 300,
-            radius: 15,
-            color: 'black',
-        };
+    <div class="power-bar" id="powerBar">
+      <div class="power-fill" id="powerFill"></div>
+      <div class="slider" id="slider"></div>
+    </div>
 
-        let isMouseDown = false;
-        let startX, startY;
+    <div class="direction-meter" id="directionMeter">
+      <div class="direction-indicator" id="directionIndicator"></div>
+    </div>
 
-        // Update game every frame
-        function updateGame() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas
+    <div class="level-info">
+      <p>Level: <span id="level">1</span></p>
+      <button onclick="puttBall()">Putt the Ball</button>
+    </div>
+  </div>
 
-            // Move ball
-            ball.x += ball.dx;
-            ball.y += ball.dy;
+  <script>
+    let level = 1;
+    const course = document.getElementById('course');
+    const ball = document.querySelector('.ball');
+    const hole = document.querySelector('.hole');
+    const powerBar = document.getElementById('powerBar');
+    const powerFill = document.getElementById('powerFill');
+    const slider = document.getElementById('slider');
 
-            // Ball gravity and friction
-            ball.dy += 0.1; // Gravity
+    const directionMeter = document.getElementById('directionMeter');
+    const directionIndicator = document.getElementById('directionIndicator');
 
-            if (ball.x > canvas.width - ball.radius || ball.x < ball.radius) {
-                ball.dx *= -0.9; // Bounce off sides
-            }
+    let isDragging = false;
+    let power = 0;
+    let direction = 0; // Direction in degrees
+    let courseSlope = 0;
 
-            if (ball.y > canvas.height - ball.radius) {
-                ball.dy *= -0.9; // Bounce off bottom
-            }
+    // Update the power bar and shot arc
+    slider.addEventListener('mousedown', function (event) {
+      isDragging = true;
+      document.addEventListener('mousemove', dragSlider);
+      document.addEventListener('mouseup', function () {
+        isDragging = false;
+        document.removeEventListener('mousemove', dragSlider);
+      });
+    });
 
-            // Draw hole
-            ctx.beginPath();
-            ctx.arc(hole.x, hole.y, hole.radius, 0, Math.PI * 2);
-            ctx.fillStyle = hole.color;
-            ctx.fill();
+    function dragSlider(event) {
+      if (isDragging) {
+        let newLeft = event.clientX - powerBar.offsetLeft - slider.offsetWidth / 2;
+        if (newLeft < 0) newLeft = 0;
+        if (newLeft > powerBar.offsetWidth - slider.offsetWidth) newLeft = powerBar.offsetWidth - slider.offsetWidth;
+        slider.style.left = newLeft + 'px';
+        power = (newLeft / (powerBar.offsetWidth - slider.offsetWidth)) * 100;
+        powerFill.style.width = power + '%';
+      }
+    }
 
-            // Draw ball
-            ctx.beginPath();
-            ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
-            ctx.fillStyle = ball.color;
-            ctx.fill();
+    // Update direction meter
+    directionMeter.addEventListener('click', (event) => {
+      const directionX = event.clientX - directionMeter.getBoundingClientRect().left;
+      direction = (directionX / directionMeter.offsetWidth) * 100 - 50; // Maps to -50 to +50 degrees
+      directionIndicator.style.left = `${directionX - directionIndicator.offsetWidth / 2}px`;
+    });
 
-            // Check if ball hits the hole
-            if (Math.sqrt(Math.pow(ball.x - hole.x, 2) + Math.pow(ball.y - hole.y, 2)) < hole.radius + ball.radius) {
-                resetBall();
-            }
+    function puttBall() {
+      const ballPosition = ball.getBoundingClientRect();
+      const holePosition = hole.getBoundingClientRect();
 
-            // Update score
-            scoreDiv.textContent = 'Strokes: ' + strokes;
+      // Randomize the slope every level
+      courseSlope = Math.random() * 20 - 10; // Random slope between -10 and 10
+      const distanceToHole = holePosition.left - ballPosition.left;
+      const powerFactor = (power / 100) * distanceToHole + courseSlope;
 
-            requestAnimationFrame(updateGame); // Keep animating
+      let ballX = 50;
+      let ballY = 180; // Starting position on the top edge
+
+      let velocity = powerFactor / 10; // Control the speed of the ball
+
+      let interval = setInterval(function () {
+        // Update the ball's position based on shot direction and slope
+        ballX += Math.cos(direction * (Math.PI / 180)) * velocity; // Direction factor
+        ballY += Math.sin(courseSlope / 100) * velocity; // Apply slope effect
+
+        ball.style.left = ballX + 'px';
+        ball.style.top = ballY + 'px';
+
+        // Check if ball is near the hole
+        if (ballX >= holePosition.left - 20 && ballY >= holePosition.top - 20) {
+          clearInterval(interval);
+          level++;
+          document.getElementById('level').innerText = level;
+          resetBall();
+          setTimeout(() => {
+            alert('You made the putt! Next level!');
+            updateCourse();
+          }, 500);
         }
+      }, 20);
+    }
 
-        // Reset ball position and increment stroke count
-        function resetBall() {
-            ball.x = 100;
-            ball.y = 300;
-            ball.dx = 0;
-            ball.dy = 0;
-            strokes++;
-        }
+    function resetBall() {
+      ball.style.left = '50px';
+      ball.style.top = '180px';
+    }
 
-        // Mouse event to control ball's velocity
-        canvas.addEventListener('mousedown', (e) => {
-            isMouseDown = true;
-            startX = e.offsetX;
-            startY = e.offsetY;
-        });
+    function updateCourse() {
+      // Change the course topography randomly for each level
+      course.style.backgroundColor = getRandomColor();
+    }
 
-        canvas.addEventListener('mouseup', (e) => {
-            if (!isMouseDown) return;
-            isMouseDown = false;
-            const endX = e.offsetX;
-            const endY = e.offsetY;
-
-            // Calculate direction and power for the shot
-            const angle = Math.atan2(endY - startY, endX - startX);
-            const power = Math.min(Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2)) / 10, 15);
-            ball.dx = power * Math.cos(angle);
-            ball.dy = power * Math.sin(angle);
-
-            strokes++;
-        });
-
-        // Initialize game loop
-        updateGame();
-    </script>
+    function getRandomColor() {
+      const colors = ['#228B22', '#32CD32', '#006400', '#556B2F'];
+      return colors[Math.floor(Math.random() * colors.length)];
+    }
+  </script>
 </body>
 </html>
 
