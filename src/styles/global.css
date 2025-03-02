@@ -39,7 +39,7 @@ body {
   color: rgb(var(--gray-dark));
   font-size: 12px;
   line-height: 1.7;
-  bg-color: light-green;
+  background-color: light-green;
 }
 main {
   width: 720px;
