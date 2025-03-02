@@ -41,7 +41,7 @@ body {
   color: rgb(var(--gray-dark));
   font-size: 12px;
   line-height: 1.7;
-  background-color: var(--light-green); /* Ensures background is light green */
+  background-color: var(--light-green, #eef0e9);
 }
 
 main {
