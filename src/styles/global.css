@@ -31,13 +31,6 @@
   text-transform: uppercase;
 }
 @font-face {
-  font-family: "Shafarik";
-  src: url("/fonts/Shafarik-Regular.ttf") format("ttf");
-  font-weight: 699;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
   font-family: "Poppins";
   src: url("/fonts/Poppins-Medium.ttf") format("ttf");
   font-weight: 700;
