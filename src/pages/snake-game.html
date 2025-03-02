@@ -15,35 +15,46 @@
         }
         canvas {
             background-color: black;
+            position: relative;
         }
-        .controls {
+        #startBtn {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 10px 20px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+        .controller {
             display: grid;
-            grid-template-columns: repeat(3, 50px);
+            grid-template-columns: 80px 80px 80px;
+            grid-template-rows: 80px 80px;
             gap: 5px;
-            margin-top: 10px;
+            margin-top: 20px;
+            background: gray;
+            padding: 10px;
+            border-radius: 10px;
         }
         .button {
-            width: 50px;
-            height: 50px;
-            background: gray;
+            width: 80px;
+            height: 80px;
+            background: darkgray;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 24px;
             cursor: pointer;
-        }
-        #startBtn {
-            padding: 10px 20px;
-            font-size: 18px;
-            margin-bottom: 10px;
-            cursor: pointer;
+            border-radius: 5px;
         }
     </style>
 </head>
 <body>
-    <button id="startBtn">Start Game</button>
-    <canvas id="gameCanvas" width="300" height="300"></canvas>
-    <div class="controls">
+    <div style="position: relative;">
+        <canvas id="gameCanvas" width="300" height="300"></canvas>
+        <button id="startBtn">Start Game</button>
+    </div>
+    <div class="controller">
         <div></div>
         <div class="button" onclick="changeDirection('UP')">▲</div>
         <div></div>
@@ -70,7 +81,12 @@
             ctx.fillStyle = "lime";
             snake.forEach(segment => ctx.fillRect(segment.x, segment.y, 10, 10));
             moveSnake();
-            setTimeout(drawGame, 100);
+            if (checkCollision()) {
+                running = false;
+                alert("Game Over");
+            } else {
+                setTimeout(drawGame, 100);
+            }
         }
         
         function moveSnake() {
@@ -87,6 +103,14 @@
             }
         }
         
+        function checkCollision() {
+            let head = snake[0];
+            if (head.x < 0 || head.x >= canvas.width || head.y < 0 || head.y >= canvas.height) {
+                return true;
+            }
+            return false;
+        }
+        
         function changeDirection(newDirection) {
             direction = newDirection;
         }
@@ -98,26 +122,6 @@
             if (event.key === "ArrowRight" && direction !== "LEFT") changeDirection("RIGHT");
         });
         
-        let touchStartX = 0, touchStartY = 0;
-        document.addEventListener("touchstart", (event) => {
-            touchStartX = event.touches[0].clientX;
-            touchStartY = event.touches[0].clientY;
-        });
-        
-        document.addEventListener("touchmove", (event) => {
-            let dx = event.touches[0].clientX - touchStartX;
-            let dy = event.touches[0].clientY - touchStartY;
-            if (Math.abs(dx) > Math.abs(dy)) {
-                if (dx > 0 && direction !== "LEFT") changeDirection("RIGHT");
-                if (dx < 0 && direction !== "RIGHT") changeDirection("LEFT");
-            } else {
-                if (dy > 0 && direction !== "UP") changeDirection("DOWN");
-                if (dy < 0 && direction !== "DOWN") changeDirection("UP");
-            }
-            touchStartX = event.touches[0].clientX;
-            touchStartY = event.touches[0].clientY;
-        });
-        
         startBtn.addEventListener("click", () => {
             running = true;
             drawGame();
@@ -125,4 +129,5 @@
     </script>
 </body>
 </html>
+
 
