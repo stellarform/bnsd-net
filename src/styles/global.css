@@ -172,6 +172,15 @@ hr {
   h2 {
     font-size: 18pt;
   }
+  
+  .nav-link {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 300;
+    font-size: 8pt;
+    text-decoration: none;
+    color: inherit;
+    margin: 0 0.25em;
+  }
 
   .sr-only {
     border: 0;
