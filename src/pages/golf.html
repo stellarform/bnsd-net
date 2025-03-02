@@ -15,10 +15,10 @@
         /* Green rectangle (golf green) */
         .green-rectangle {
             position: absolute;
-            bottom: 0;  /* Position at the bottom of the screen */
+            bottom: 0; /* Position at the bottom of the screen */
             left: 0;
             width: 100%;
-            height: 50%;
+            height: 50%; /* Lower half of the screen */
             background-color: green;
             display: flex;
             justify-content: center;
@@ -120,6 +120,8 @@
         const accuracyMeterInner = document.getElementById('accuracyMeterInner');
 
         let ballPosition = { x: 100, y: 25 };  // Starting position of the ball
+        let ballSpeed = 0; // Initial speed
+        let ballDirection = 0; // Initial direction (angle)
 
         // Update the power and accuracy meters visually
         powerMeter.addEventListener('input', () => {
@@ -137,7 +139,8 @@
 
             // Ball movement calculations
             const radians = (accuracy - 90) * (Math.PI / 180);  // Convert accuracy to radians
-            const speed = power * 0.1;  // Scale speed by 0.1 to make it reasonable
+            ballSpeed = power * 0.3;  // Increase the speed multiplier for faster ball movement
+            ballDirection = radians;  // Set the direction of the shot
 
             // Ball motion animation
             let startTime = null;
@@ -146,24 +149,36 @@
                 const elapsed = timestamp - startTime;
 
                 // Update ball's position based on speed and accuracy
-                ballPosition.x += speed * Math.cos(radians);
-                ballPosition.y += speed * Math.sin(radians);
+                ballPosition.x += ballSpeed * Math.cos(ballDirection);
+                ballPosition.y += ballSpeed * Math.sin(ballDirection);
+
+                // Add deceleration for quick stop
+                ballSpeed *= 0.99; // Slow the ball down over time
 
                 // Update ball position on screen
                 ball.style.left = `${ballPosition.x}px`;
                 ball.style.bottom = `${ballPosition.y}px`;
 
+                // Prevent the ball from crossing into the green area (the ground)
+                if (ballPosition.y <= 25) {
+                    ballPosition.y = 25;  // Keep ball on the green rectangle
+                    if (ballSpeed < 0.5) {
+                        ballSpeed = 0;  // Stop the ball if the speed is too low
+                    }
+                }
+
                 // Check if the ball reaches the golf hole
                 if (
                     ballPosition.x > (window.innerWidth - 150) &&
-                    ballPosition.y > (window.innerHeight / 2 - 20) &&
-                    ballPosition.y < (window.innerHeight / 2 + 20)
+                    ballPosition.x < (window.innerWidth - 50) &&
+                    ballPosition.y > (window.innerHeight / 2 - 10) &&
+                    ballPosition.y < (window.innerHeight / 2 + 10)
                 ) {
                     alert('You got the ball in the hole!');
                     return;
                 }
 
-                // Stop the animation when ball goes off-screen
+                // Stop the animation if ball goes off-screen
                 if (ballPosition.x > window.innerWidth || ballPosition.y > window.innerHeight) {
                     return;
                 }
@@ -179,6 +194,7 @@
 
 </body>
 </html>
+
 
 
 
