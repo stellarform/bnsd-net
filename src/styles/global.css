@@ -38,7 +38,7 @@
   font-display: swap;
 }
 body {
-  font-family: "Atkinson", sans-serif;
+  font-family: "Forma", sans-serif;
   margin: 0;
   padding: 0;
   text-align: center;
@@ -68,18 +68,23 @@ h6 {
 }
 h1 {
   font-size: 3.052em;
+  font-family: "Shafarik";
 }
 h2 {
   font-size: 2.441em;
+  font-family: "Shafarik";
 }
 h3 {
   font-size: 1.953em;
+  font-family: "Shafarik";
 }
 h4 {
   font-size: 1.563em;
+  font-family: "Shafarik";
 }
 h5 {
   font-size: 1.25em;
+  font-family: "Shafarik";
 }
 strong,
 b {
