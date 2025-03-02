@@ -10,6 +10,7 @@
   --black: 15, 18, 25;
   --gray: 96, 115, 159;
   --gray-light: 229, 233, 240;
+  --light-green: 231, 233, 225;
   --gray-dark: 34, 41, 57;
   --gray-gradient: rgba(var(--gray-light), 50%), #fff;
 }
@@ -35,9 +36,10 @@ body {
   background-size: 100% 600px;
   word-wrap: break-word;
   overflow-wrap: break-word;
-  color: rgb(var(--gray-light));
+  color: rgb(var(--gray-dark));
   font-size: 12px;
   line-height: 1.7;
+  bg-color: light-green;
 }
 main {
   width: 720px;
