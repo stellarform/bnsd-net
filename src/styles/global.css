@@ -23,9 +23,9 @@
   font-display: swap;
 }
 @font-face {
-  font-family: "Forma";
-  src: url("/fonts/FormaDJRText-Black-Testing.woff") format("woff");
-  font-weight: 700;
+  font-family: "Poppins Regular";
+  src: url("/fonts/Poppins-Regular.ttf") format("woff");
+  font-weight: 300;
   font-style: normal;
   font-display: swap;
 }
@@ -85,6 +85,11 @@ a:hover {
 }
 p {
   margin-bottom: 1em;
+  text-decoration: none;
+ 	color: inherit;	
+  font-size: 12pt;
+	align-items: center;
+  font-family: "Poppins Regular";
 }
 .prose p {
   margin-bottom: 2em;
