@@ -17,16 +17,27 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 			        display: flex;
 			        flex-direction: column;
 			}
-			main {
-			        flex: 1; /* Ensures main expands to fill available space */
+			header {
+			        margin: 0;
+			        padding: 1em;
+			        background: white;
+			        box-shadow: 0 0px 0px rgba(var(--black), 5%);
+			        position: sticky;
+			        top: 0;
+			        width: 100%;
+			        z-index: 1000;
+			    }
+			
+			    .content-wrapper {
+			        flex: 1;
+			        background: lightblue; /* Example background color */
 			        display: flex;
 			        flex-direction: column;
-			        justify-content: center;
+			        justify-content: flex-start; /* Ensures content starts from the top */
 			        align-items: center;
 			        text-align: center;
-			        min-height: 100vh; /* Prevents overflow */
-				padding-top: 40px; /* Adjust based on the height of your header */
-       				box-sizing: border-box; /* Prevents padding from affecting layout */
+			        min-height: 100vh;
+			        padding-top: 0; /* Ensures there's no padding pushing content down */
 			}
 		</style>
 	</head>
