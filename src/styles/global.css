@@ -10,7 +10,7 @@
   --black: 15, 18, 25;
   --gray: 96, 115, 159;
   --gray-light: 229, 233, 240;
-  --light-green: 231, 233, 225;
+  --light-green: #90ee90;
   --gray-dark: 34, 41, 57;
   --gray-gradient: rgba(var(--gray-light), 50%), #fff;
 }
@@ -39,7 +39,7 @@ body {
   color: rgb(var(--gray-dark));
   font-size: 12px;
   line-height: 1.7;
-  background-color: light-green;
+  background-color: var(--light-green);
 }
 main {
   width: 720px;
