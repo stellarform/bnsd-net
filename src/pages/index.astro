@@ -8,8 +8,6 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 <!doctype html>
 <html lang="en">
 	<head>
-		<p style="height: 75px;"></p>
-
 		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
 		<style>
 			html, body {
@@ -39,13 +37,15 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 			        align-items: center;
 			        text-align: center;
 			        min-height: 100vh;
-			        padding-top: 50; /* Ensures there's no padding pushing content down */
+			        padding-top: 0; /* Ensures there's no padding pushing content down */
 			}
 		</style>
 	</head>
 	<body>
 		<Header />
 		<main>
+			<p style="height: 75px;"></p>
+
 			<h2>Ben Sommers Design</h2>
 			<p>
 				See my work at <a href="https://stellarform.net">Stellarform</a>
