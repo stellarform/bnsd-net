@@ -60,7 +60,7 @@
 
         .ball {
             position: absolute;
-            left: 5%;
+            left: 5%; /* Ball starts on the left side of the green section */
             bottom: 25%;
             width: 20px;
             height: 20px;
@@ -141,7 +141,7 @@
 
         let level = 1;
         let strokes = 0;
-        let ballPosition = { x: 5, y: 25 }; // Ball starts at 5% of the width
+        let ballPosition = { x: 5, y: 25 }; // Ball starts at 5% of the width (left side)
         let ballSpeed = { x: 0, y: 0 }; // No vertical speed
         let holePosition = { x: 95, y: 25 }; // Hole at 95% of the width
         let gameOver = false;
@@ -289,4 +289,5 @@
     </script>
 </body>
 </html>
+
 
