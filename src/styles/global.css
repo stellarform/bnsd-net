@@ -32,11 +32,10 @@ body {
   margin: 0;
   padding: 0;
   text-align: center;
-  background: gray;
   background-size: 100% 600px;
   word-wrap: break-word;
   overflow-wrap: break-word;
-  color: rgb(var(--gray-dark));
+  color: rgb(var(--gray-light));
   font-size: 12px;
   line-height: 1.7;
 }
