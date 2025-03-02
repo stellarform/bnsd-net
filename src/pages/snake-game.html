@@ -32,7 +32,7 @@
         #startBtn, #restartBtn {
             width: 80px;
             height: 80px;
-            background-color: lime;
+            background-color: #EAF6CF;
             border: none;
             border-radius: 5px;
             box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
@@ -44,8 +44,6 @@
         }
         #restartBtn {
             display: none;
-            background-color: red;
-            
         }
         .controller {
             display: grid;
@@ -72,8 +70,11 @@
             box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
         }
         .center-button {
-            grid-column: 2; /* Middle column */
-            grid-row: 2; /* Middle row */
+            grid-column: 1 / span 3; /* Center the button across the full width */
+            grid-row: 1 / span 3; /* Center the button across the full height */
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
     </style>
 </head>
@@ -112,7 +113,7 @@
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.fillStyle = "red";
             ctx.fillRect(food.x, food.y, 10, 10);
-            ctx.fillStyle = "lime";
+            ctx.fillStyle = "black";
             snake.forEach(segment => ctx.fillRect(segment.x, segment.y, 10, 10));
             moveSnake();
             if (checkCollision()) {
