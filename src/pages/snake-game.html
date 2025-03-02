@@ -32,7 +32,7 @@
         #startBtn, #restartBtn {
             width: 80px;
             height: 80px;
-            background-color: #EAF6CF;
+            background-color: lime;
             border: none;
             border-radius: 5px;
             box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
@@ -41,13 +41,11 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
         }
         #restartBtn {
             display: none;
+            background-color: red;
+            
         }
         .controller {
             display: grid;
@@ -73,20 +71,26 @@
             border-radius: 5px;
             box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
         }
+        .center-button {
+            grid-column: 2; /* Middle column */
+            grid-row: 2; /* Middle row */
+        }
     </style>
 </head>
 <body>
     <div class="device">
         <div class="game-container">
             <canvas id="gameCanvas" width="300" height="300"></canvas>
-            <button id="startBtn">Start</button>
-            <button id="restartBtn" onclick="restartGame()">Restart</button>
         </div>
         <div class="controller">
             <div></div>
             <div class="button" onclick="changeDirection('UP')">▲</div>
             <div></div>
             <div class="button" onclick="changeDirection('LEFT')">◄</div>
+            <div class="center-button">
+                <button id="startBtn">Start</button>
+                <button id="restartBtn" onclick="restartGame()">Restart</button>
+            </div>
             <div></div>
             <div class="button" onclick="changeDirection('RIGHT')">►</div>
             <div></div>
@@ -173,5 +177,4 @@
     </script>
 </body>
 </html>
-
 
