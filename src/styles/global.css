@@ -135,12 +135,17 @@ hr {
   border-top: 1px solid rgb(var(--gray-light));
 }
 @media (max-width: 720px) {
-.social-icons svg {
-    display: block;  /* Ensure the icons are visible */
+  .social-icons svg {
+    display: inline-block;  /* Ensure the icons are displayed inline */
+    width: 24px;            /* Adjust the size of the icons */
+    height: 24px;           /* Maintain aspect ratio */
+    margin-right: 10px;     /* Add space between icons if needed */
   }
+
   body {
     font-size: 18px;
   }
+
   main {
     padding: 1em;
   }
