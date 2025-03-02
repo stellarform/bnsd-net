@@ -86,9 +86,9 @@ a:hover {
 p {
   margin-bottom: 1em;
   text-decoration: none;
- 	color: inherit;	
+  color: inherit;	
   font-size: 12pt;
-	align-items: center;
+  align-items: center;
   font-family: "Poppins Regular";
 }
 .prose p {
