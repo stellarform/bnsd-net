@@ -1,6 +1,7 @@
 ---
 import HeaderLink from './HeaderLink.astro';
 import { SITE_TITLE } from '../consts';
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500&display=swap" rel="stylesheet">
 ---
 
 <header>
@@ -50,8 +51,10 @@ import { SITE_TITLE } from '../consts';
         	z-index: 1000; /* Ensures the header stays on top */
 	}
 	h2 {
-		margin: 0;
-		font-size: 1em;
+		font-family: 'Poppins', sans-serif;
+ 		font-weight: 300; /* Medium weight */
+  		text-decoration: none; /* Optional: removes underline */
+ 		 color: inherit; /* Keeps default link color */
 	}
 
 	h2 a,
