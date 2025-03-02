@@ -34,7 +34,8 @@
       width: 40px;
       height: 40px;
       border-radius: 50%;
-      background-color: brown;
+      background-color: neon;
+      box-shadow: 0 0 10px 5px #00FF00;
     }
     .ball {
       position: absolute;
@@ -44,6 +45,7 @@
       height: 20px;
       border-radius: 50%;
       background-color: white;
+      transition: left 0.02s linear, top 0.02s linear;
     }
     .power-bar {
       width: 200px;
@@ -77,6 +79,22 @@
       background-color: rgba(255, 0, 0, 0.7);
       transform-origin: left center;
     }
+    .direction-meter {
+      margin-top: 10px;
+      width: 200px;
+      height: 20px;
+      background-color: #ddd;
+      position: relative;
+    }
+    .direction-indicator {
+      width: 10px;
+      height: 20px;
+      background-color: #32CD32;
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+    }
     .level-info {
       font-size: 18px;
       margin-top: 10px;
@@ -97,6 +115,10 @@
       <div class="slider" id="slider"></div>
     </div>
 
+    <div class="direction-meter" id="directionMeter">
+      <div class="direction-indicator" id="directionIndicator"></div>
+    </div>
+
     <div class="level-info">
       <p>Level: <span id="level">1</span></p>
       <button onclick="puttBall()">Putt the Ball</button>
@@ -115,9 +137,12 @@
     arc.classList.add('arc');
     course.appendChild(arc);
 
+    const directionMeter = document.getElementById('directionMeter');
+    const directionIndicator = document.getElementById('directionIndicator');
+
     let isDragging = false;
     let power = 0;
-    let courseSlope = 0;
+    let direction = 0; // Direction in degrees
 
     // Update the power bar and shot arc
     slider.addEventListener('mousedown', function (event) {
@@ -141,22 +166,29 @@
       }
     }
 
+    // Update the shot arc preview
     function updateShotArc() {
       const arcLength = power * 3; // Adjust length based on power
-      const arcAngle = Math.min(power * 1.5, 45); // Limit arc angle
-
+      const arcAngle = direction * 0.5; // Map direction to angle
       arc.style.width = arcLength + 'px';
       arc.style.transform = `rotate(${arcAngle}deg)`;
       arc.style.top = '150px'; // Adjust arc height
     }
+
+    // Update direction meter
+    directionMeter.addEventListener('click', (event) => {
+      const directionX = event.clientX - directionMeter.getBoundingClientRect().left;
+      direction = (directionX / directionMeter.offsetWidth) * 100 - 50; // Maps to -50 to +50 degrees
+      directionIndicator.style.left = `${directionX - directionIndicator.offsetWidth / 2}px`;
+      updateShotArc();
+    });
 
     function puttBall() {
       const ballPosition = ball.getBoundingClientRect();
       const holePosition = hole.getBoundingClientRect();
 
       // Randomize the slope every level
-      courseSlope = Math.random() * 50 - 25; // Random slope between -25 and 25
-
+      let courseSlope = Math.random() * 20 - 10; // Random slope between -10 and 10
       const distanceToHole = holePosition.left - ballPosition.left;
       const powerFactor = (power / 100) * distanceToHole + courseSlope;
 
@@ -164,11 +196,13 @@
       let ballY = 350;
 
       let interval = setInterval(function () {
-        ballX += powerFactor / 10;
+        ballX += Math.cos(direction * (Math.PI / 180)) * powerFactor / 10; // Direction factor
         ballY -= Math.sin(courseSlope / 100) * 2; // Apply slope effect
+
         ball.style.left = ballX + 'px';
         ball.style.top = ballY + 'px';
 
+        // Check if ball is near the hole
         if (ballX >= holePosition.left - 20) {
           clearInterval(interval);
           level++;
