@@ -10,6 +10,7 @@ u/*
   --black: 15, 18, 25;
   --gray: 96, 115, 159;
   --gray-light: 229, 233, 240;
+  --light-green: #e7e9e1;
   --light-green: #eef0e9;
   --gray-dark: 34, 41, 57;
   --gray-gradient: rgba(var(--gray-light), 50%), #fff;
@@ -66,7 +67,7 @@ h2 {
   color: inherit;	
   font-size: 24pt;
   align-items: center;
-  font-family: "Poppins Regular";
+  font-family: "Poppins";
   letter-spacing: -0.75px;
 }
 h3 {
@@ -155,7 +156,7 @@ hr {
   h2 {
     font-size: 18pt;
   }
-  
+
   .sr-only {
     border: 0;
     padding: 0;
