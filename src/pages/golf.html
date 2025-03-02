@@ -3,228 +3,140 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Golf Putting Game</title>
+    <title>Desert Golfing</title>
     <style>
-        body, html {
+        body {
             margin: 0;
             padding: 0;
-            overflow: hidden;
-            height: 100%;
+            background-color: #f8f3e4; /* Light sand color */
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
         }
 
-        #game {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background: #f4f1a1; /* Simple light sand background */
+        canvas {
+            border: 1px solid black;
+            background-color: #e2c78f; /* Desert color */
         }
 
-        #sky {
-            height: 50%;
-            width: 100%;
-            background: #a2d5f2; /* Light blue for sky */
-            position: absolute;
-            top: 0;
-        }
-
-        #green {
-            height: 50%;
-            width: 100%;
-            position: absolute;
-            bottom: 0;
-            background-color: #4CAF50; /* Simple green ground */
-        }
-
-        .hole {
-            position: absolute;
-            bottom: 5%;  /* Hole placed at the bottom center */
-            left: 90%;
-            width: 40px;
-            height: 20px;
-            background-color: #333; /* Dark hole */
-            border-radius: 5px;
-        }
-
-        .flag {
-            position: absolute;
-            top: -25px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 12px;
-            color: white;
-            font-weight: bold;
-        }
-
-        .ball {
-            position: absolute;
-            left: 5%;  /* Ball starts at the left edge */
-            bottom: 25%;  /* Slightly above the ground */
-            width: 20px;
-            height: 20px;
-            background-color: white;
-            border-radius: 50%;
-        }
-
-        #controls {
+        #score {
             position: absolute;
             top: 10px;
             left: 10px;
-            background: rgba(0, 0, 0, 0.5);
-            color: white;
-            padding: 10px;
-            border-radius: 5px;
-        }
-
-        #scoreboard {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            color: white;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 10px;
-            border-radius: 5px;
-        }
-
-        #shotButton {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 10px 20px;
-            font-size: 16px;
-            background-color: #333;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        #shotButton:hover {
-            background-color: #555;
+            font-size: 20px;
+            color: #333;
         }
     </style>
 </head>
 <body>
-    <div id="game">
-        <div id="sky"></div>
-        <div id="green">
-            <div class="hole" id="hole">
-                <div class="flag" id="flag">Hole 1</div>
-            </div>
-        </div>
-        <div class="ball" id="ball"></div>
-        <div id="controls">
-            <label for="power">Power:</label>
-            <input type="range" id="power" min="0" max="100" value="50">
-            <label for="direction">Direction:</label>
-            <input type="range" id="direction" min="0" max="90" value="45">
-        </div>
-        <div id="scoreboard">
-            <div id="level">Level: 1</div>
-            <div id="strokes">Strokes: 0</div>
-        </div>
-        <button id="shotButton">Take Shot</button>
-    </div>
-
+    <div id="score">Strokes: 0</div>
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
     <script>
-        const ball = document.getElementById("ball");
-        const hole = document.getElementById("hole");
-        const flag = document.getElementById("flag");
-        const powerSlider = document.getElementById("power");
-        const directionSlider = document.getElementById("direction");
-        const levelDisplay = document.getElementById("level");
-        const strokesDisplay = document.getElementById("strokes");
-        const shotButton = document.getElementById("shotButton");
-
-        let level = 1;
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreDiv = document.getElementById('score');
         let strokes = 0;
-        let ballPosition = { x: 5, y: 25 }; // Ball starts at left side
-        let ballSpeed = { x: 0, y: 0 }; // No vertical speed
-        let holePosition = { x: 95, y: 25 }; // Hole at the right side
-        let gameOver = false;
 
-        // Function to reset the game
-        function resetGame() {
-            level++;
-            strokes = 0;
-            ballPosition = { x: 5, y: 25 }; // Ball at left side
-            ballSpeed = { x: 0, y: 0 }; // Reset ball speed
-            gameOver = false;
-            updateScoreboard();
-            updateFlag();
-            ball.style.left = `${ballPosition.x}%`;
-            ball.style.bottom = `${ballPosition.y}%`;
-        }
+        let ball = {
+            x: 100,
+            y: 300,
+            radius: 10,
+            dx: 0,
+            dy: 0,
+            color: 'white',
+        };
 
-        // Update the scoreboard
-        function updateScoreboard() {
-            levelDisplay.textContent = `Level: ${level}`;
-            strokesDisplay.textContent = `Strokes: ${strokes}`;
-        }
+        let hole = {
+            x: 700,
+            y: 300,
+            radius: 15,
+            color: 'black',
+        };
 
-        // Update the flag (hole number)
-        function updateFlag() {
-            flag.textContent = `Hole ${level}`;
-        }
+        let isMouseDown = false;
+        let startX, startY;
 
-        // Update ball position
-        function updateBallPosition() {
-            ballPosition.x += ballSpeed.x;
+        // Update game every frame
+        function updateGame() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas
 
-            // Apply friction (slow down ball gradually)
-            if (Math.abs(ballSpeed.x) > 0.01) {
-                ballSpeed.x *= 0.99;
+            // Move ball
+            ball.x += ball.dx;
+            ball.y += ball.dy;
+
+            // Ball gravity and friction
+            ball.dy += 0.1; // Gravity
+
+            if (ball.x > canvas.width - ball.radius || ball.x < ball.radius) {
+                ball.dx *= -0.9; // Bounce off sides
             }
 
-            // Keep ball within boundaries
-            ballPosition.x = Math.max(5, Math.min(ballPosition.x, 95));
-
-            ball.style.left = `${ballPosition.x}%`;
-
-            // Check if ball reaches the hole
-            if (ballPosition.x >= holePosition.x) {
-                alert("Hole in One!");
-                resetGame();
+            if (ball.y > canvas.height - ball.radius) {
+                ball.dy *= -0.9; // Bounce off bottom
             }
 
-            if (ballPosition.x > 100) {
-                gameOver = true;
-                alert("Game Over!");
+            // Draw hole
+            ctx.beginPath();
+            ctx.arc(hole.x, hole.y, hole.radius, 0, Math.PI * 2);
+            ctx.fillStyle = hole.color;
+            ctx.fill();
+
+            // Draw ball
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+            ctx.fillStyle = ball.color;
+            ctx.fill();
+
+            // Check if ball hits the hole
+            if (Math.sqrt(Math.pow(ball.x - hole.x, 2) + Math.pow(ball.y - hole.y, 2)) < hole.radius + ball.radius) {
+                resetBall();
             }
+
+            // Update score
+            scoreDiv.textContent = 'Strokes: ' + strokes;
+
+            requestAnimationFrame(updateGame); // Keep animating
         }
 
-        // Function to hit the ball
-        function hitBall() {
-            if (gameOver) return;
-
-            let power = powerSlider.value / 100;
-            let direction = directionSlider.value;
-            let angleRad = direction * (Math.PI / 180);
-
-            // Calculate the ball's velocity
-            ballSpeed.x = Math.cos(angleRad) * power;
-
+        // Reset ball position and increment stroke count
+        function resetBall() {
+            ball.x = 100;
+            ball.y = 300;
+            ball.dx = 0;
+            ball.dy = 0;
             strokes++;
-            updateScoreboard();
         }
 
-        // Event listener for shot button
-        shotButton.addEventListener("click", () => {
-            hitBall();
+        // Mouse event to control ball's velocity
+        canvas.addEventListener('mousedown', (e) => {
+            isMouseDown = true;
+            startX = e.offsetX;
+            startY = e.offsetY;
         });
 
-        // Run the game updates every frame
-        setInterval(() => {
-            if (!gameOver) {
-                updateBallPosition();
-            }
-        }, 20);
+        canvas.addEventListener('mouseup', (e) => {
+            if (!isMouseDown) return;
+            isMouseDown = false;
+            const endX = e.offsetX;
+            const endY = e.offsetY;
 
-        powerSlider.addEventListener('input', updateScoreboard);
-        directionSlider.addEventListener('input', updateScoreboard);
+            // Calculate direction and power for the shot
+            const angle = Math.atan2(endY - startY, endX - startX);
+            const power = Math.min(Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2)) / 10, 15);
+            ball.dx = power * Math.cos(angle);
+            ball.dy = power * Math.sin(angle);
+
+            strokes++;
+        });
+
+        // Initialize game loop
+        updateGame();
     </script>
 </body>
 </html>
+
 
 
 
