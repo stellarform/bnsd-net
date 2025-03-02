@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Golf Game</title>
+    <meta name="viewport" content="width=device-width, initial-scale: 1.0">
+    <title>Golf Game with Shot Arc</title>
     <style>
         body, html {
             margin: 0;
@@ -35,10 +35,18 @@
             position: absolute;
             right: 5%;
             bottom: 20%;
-            width: 20px;
-            height: 20px;
-            background-color: black;
-            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            background-color: #333;
+            border-radius: 5px;
+        }
+        .flag {
+            position: absolute;
+            top: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            color: white;
         }
         .ball {
             position: absolute;
@@ -67,13 +75,31 @@
             padding: 10px;
             border-radius: 5px;
         }
+        #shotButton {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #333;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #shotButton:hover {
+            background-color: #555;
+        }
     </style>
 </head>
 <body>
     <div id="game">
         <div id="sky"></div>
         <div id="ground"></div>
-        <div class="hole" id="hole"></div>
+        <div class="hole" id="hole">
+            <div class="flag" id="flag">Hole 1</div>
+        </div>
         <div class="ball" id="ball"></div>
         <div id="controls">
             <label for="power">Power:</label>
@@ -85,23 +111,27 @@
             <div id="level">Level: 1</div>
             <div id="strokes">Strokes: 0</div>
         </div>
+        <button id="shotButton">Take Shot</button>
     </div>
 
     <script>
         const ball = document.getElementById("ball");
         const hole = document.getElementById("hole");
+        const flag = document.getElementById("flag");
         const powerSlider = document.getElementById("power");
         const directionSlider = document.getElementById("direction");
         const levelDisplay = document.getElementById("level");
         const strokesDisplay = document.getElementById("strokes");
-
+        const game = document.getElementById("game");
+        const shotButton = document.getElementById("shotButton");
+        
         let level = 1;
         let strokes = 0;
         let ballPosition = { x: 5, y: 25 }; // Relative to screen width/height
         let ballSpeed = { x: 0, y: 0 };
         let holePosition = { x: 95, y: 20 };
         let gameOver = false;
-
+        
         function resetGame() {
             level++;
             strokes = 0;
@@ -110,6 +140,7 @@
             gameOver = false;
             updateScoreboard();
             setRandomTopography();
+            updateFlag();
             ball.style.left = `${ballPosition.x}%`;
             ball.style.bottom = `${ballPosition.y}%`;
         }
@@ -122,6 +153,10 @@
         function setRandomTopography() {
             let groundHeight = Math.random() * 30 + 10; // Randomize ground height for variety
             document.getElementById("ground").style.height = `${groundHeight}%`;
+        }
+
+        function updateFlag() {
+            flag.textContent = `Hole ${level}`;
         }
 
         function updateBallPosition() {
@@ -146,6 +181,36 @@
             }
         }
 
+        function drawShotArc() {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = game.clientWidth;
+            canvas.height = game.clientHeight;
+            game.appendChild(canvas);
+            
+            let power = powerSlider.value / 100;
+            let direction = directionSlider.value;
+            let angleRad = direction * (Math.PI / 180);
+            let arcX = ballPosition.x;
+            let arcY = ballPosition.y;
+            let speedX = Math.cos(angleRad) * power;
+            let speedY = Math.sin(angleRad) * power;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.beginPath();
+            ctx.moveTo(arcX * game.clientWidth / 100, arcY * game.clientHeight / 100);
+            for (let t = 0; t < 100; t++) {
+                arcX += speedX;
+                arcY += speedY;
+                speedY += 0.05; // Simulate gravity
+                
+                ctx.lineTo(arcX * game.clientWidth / 100, arcY * game.clientHeight / 100);
+            }
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+
         function hitBall() {
             if (gameOver) return;
 
@@ -161,19 +226,22 @@
         }
 
         setRandomTopography();
+        updateFlag();
 
         setInterval(() => {
             if (!gameOver) {
                 updateBallPosition();
+                drawShotArc();
             }
         }, 20);
 
-        // Event listeners for hitting the ball
-        document.addEventListener("keydown", (e) => {
-            if (e.key === " " || e.key === "Enter") {
-                hitBall();
-            }
+        // Event listener for the shot button
+        shotButton.addEventListener("click", () => {
+            hitBall();
         });
+
+        powerSlider.addEventListener('input', drawShotArc);
+        directionSlider.addEventListener('input', drawShotArc);
     </script>
 </body>
 </html>
