@@ -10,10 +10,11 @@ u/*
   --black: 15, 18, 25;
   --gray: 96, 115, 159;
   --gray-light: 229, 233, 240;
-  --light-green: #eef0e9;
+  --light-green: #eef0e9; /* Correct light green background color */
   --gray-dark: 34, 41, 57;
   --gray-gradient: rgba(var(--gray-light), 50%), #fff;
 }
+
 @font-face {
   font-family: "Poppins";
   src: url("/fonts/Poppins-Medium.ttf") format("woff");
@@ -21,6 +22,7 @@ u/*
   font-style: normal;
   font-display: swap;
 }
+
 @font-face {
   font-family: "Poppins Regular";
   src: url("/fonts/Poppins-Regular.ttf") format("woff");
@@ -28,115 +30,130 @@ u/*
   font-style: normal;
   font-display: swap;
 }
+
 body {
-  font-family: "Poppins Regular";
+  font-family: "Poppins Regular", sans-serif;
   margin: 0;
   padding: 0;
   text-align: center;
-  background-size: 100% 600px;
   word-wrap: break-word;
   overflow-wrap: break-word;
   color: rgb(var(--gray-dark));
   font-size: 12px;
   line-height: 1.7;
-  background-color: var(--light-green);
+  background-color: var(--light-green); /* Ensures background is light green */
 }
+
 main {
   width: 720px;
   max-width: calc(100% - 2em);
   margin: auto;
   padding: 3em 1em;
 }
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
+
+h1, h2, h3, h4, h5, h6 {
   margin: 0 0 0.5rem 0;
   color: rgb(var(--black));
   line-height: 1.2;
 }
+
 h1 {
   font-size: 3.052em;
 }
+
 h2 {
   margin-bottom: 1em;
   text-decoration: none;
-  color: inherit;	
+  color: inherit;
   font-size: 24pt;
   align-items: center;
   font-family: "Poppins";
   letter-spacing: -0.75px;
 }
+
 h3 {
   font-size: 1.953em;
 }
+
 h4 {
   font-size: 1.563em;
 }
+
 h5 {
   margin-bottom: 1em;
   text-decoration: none;
-  color: inherit;	
+  color: inherit;
   font-size: 24pt;
   align-items: center;
   font-family: "Poppins";
 }
-strong,
-b {
+
+strong, b {
   font-weight: 700;
 }
+
 a {
   color: var(--accent);
 }
+
 a:hover {
   color: var(--accent);
 }
+
 p {
   margin-bottom: 1em;
   text-decoration: none;
-  color: inherit;	
+  color: inherit;
   font-size: 12pt;
   align-items: center;
   font-family: "Poppins Regular";
 }
+
 .prose p {
   margin-bottom: 2em;
 }
+
 textarea {
   width: 100%;
   font-size: 16px;
 }
+
 input {
   font-size: 16px;
 }
+
 table {
   width: 100%;
 }
+
 img {
   max-width: 100%;
   height: auto;
   border-radius: 8px;
 }
+
 code {
   padding: 2px 5px;
   background-color: rgb(var(--gray-light));
   border-radius: 2px;
 }
+
 pre {
   padding: 1.5em;
   border-radius: 8px;
 }
+
 pre > code {
   all: unset;
 }
+
 blockquote {
   border-left: 4px solid var(--accent);
   padding: 0 0 0 20px;
   margin: 0px;
   font-size: 1.333em;
 }
+
 hr {
   border: none;
   border-top: 1px solid rgb(var(--gray-light));
