@@ -13,14 +13,18 @@
             justify-content: center;
             height: 100vh;
         }
-        .game-container {
-            position: relative;
+        .device {
+            background: #ddd;
+            padding: 20px;
+            border-radius: 30px;
             display: flex;
             flex-direction: column;
             align-items: center;
+            box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.3);
         }
         canvas {
             background-color: black;
+            border-radius: 10px;
         }
         #startBtn, #restartBtn {
             position: absolute;
@@ -41,10 +45,9 @@
             gap: 5px;
             margin-top: 20px;
             background: gray;
-            padding: 10px;
-            border-radius: 10px;
-            position: absolute;
-            bottom: -120px;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.3);
         }
         .button {
             width: 80px;
@@ -56,14 +59,17 @@
             font-size: 24px;
             cursor: pointer;
             border-radius: 5px;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
         }
     </style>
 </head>
 <body>
-    <div class="game-container">
-        <canvas id="gameCanvas" width="300" height="300"></canvas>
-        <button id="startBtn">Start Game</button>
-        <button id="restartBtn" onclick="restartGame()">Restart</button>
+    <div class="device">
+        <div class="game-container">
+            <canvas id="gameCanvas" width="300" height="300"></canvas>
+            <button id="startBtn">Start Game</button>
+            <button id="restartBtn" onclick="restartGame()">Restart</button>
+        </div>
         <div class="controller">
             <div></div>
             <div class="button" onclick="changeDirection('UP')">▲</div>
@@ -151,3 +157,4 @@
     </script>
 </body>
 </html>
+
