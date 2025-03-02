@@ -68,6 +68,7 @@ h2 {
   font-size: 26pt;
   align-items: center;
   font-family: "Poppins";
+  letter-spacing: 0.5px;
 }
 h3 {
   font-size: 1.953em;
@@ -145,6 +146,10 @@ hr {
 
   main {
     padding: 1em;
+  }
+
+  h2 {
+    font-size: 18px;
 }
 
 .sr-only {
