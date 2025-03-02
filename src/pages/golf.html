@@ -3,20 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Golf Game with Slopes</title>
+    <title>Golf Putting Game</title>
     <style>
         body, html {
             margin: 0;
             padding: 0;
             overflow: hidden;
             height: 100%;
+            background-color: lightblue;
         }
+
         #game {
             position: absolute;
             width: 100%;
             height: 100%;
             background: lightblue;
         }
+
         #sky {
             height: 50%;
             width: 100%;
@@ -24,30 +27,37 @@
             position: absolute;
             top: 0;
         }
-        #ground {
+
+        #green {
             height: 50%;
             width: 100%;
-            background: #4CAF50;
             position: absolute;
             bottom: 0;
+            background-color: #4CAF50;
+            overflow: hidden;
+            border-top: 2px solid #228B22;
         }
+
         .hole {
             position: absolute;
-            right: 5%;
-            bottom: 5%;
-            width: 30px;
-            height: 30px;
+            bottom: 15%;
+            left: 95%;
+            width: 50px;
+            height: 20px;
             background-color: #333;
             border-radius: 5px;
         }
+
         .flag {
             position: absolute;
-            top: -40px;
+            top: -30px;
             left: 50%;
             transform: translateX(-50%);
             font-size: 12px;
             color: white;
+            font-weight: bold;
         }
+
         .ball {
             position: absolute;
             left: 5%;
@@ -57,6 +67,7 @@
             background-color: white;
             border-radius: 50%;
         }
+
         #controls {
             position: absolute;
             top: 10px;
@@ -66,6 +77,7 @@
             padding: 10px;
             border-radius: 5px;
         }
+
         #scoreboard {
             position: absolute;
             top: 10px;
@@ -75,6 +87,7 @@
             padding: 10px;
             border-radius: 5px;
         }
+
         #shotButton {
             position: absolute;
             bottom: 20px;
@@ -88,6 +101,7 @@
             border-radius: 5px;
             cursor: pointer;
         }
+
         #shotButton:hover {
             background-color: #555;
         }
@@ -96,9 +110,10 @@
 <body>
     <div id="game">
         <div id="sky"></div>
-        <div id="ground"></div>
-        <div class="hole" id="hole">
-            <div class="flag" id="flag">Hole 1</div>
+        <div id="green">
+            <div class="hole" id="hole">
+                <div class="flag" id="flag">Hole 1</div>
+            </div>
         </div>
         <div class="ball" id="ball"></div>
         <div id="controls">
@@ -122,23 +137,23 @@
         const directionSlider = document.getElementById("direction");
         const levelDisplay = document.getElementById("level");
         const strokesDisplay = document.getElementById("strokes");
-        const game = document.getElementById("game");
         const shotButton = document.getElementById("shotButton");
-        
+
         let level = 1;
         let strokes = 0;
-        let ballPosition = { x: 5, y: 25 }; // Relative to screen width/height (ball on top edge)
-        let ballSpeed = { x: 0, y: 0 }; // No vertical speed initially
-        let holePosition = { x: 95, y: 25 }; // Hole is positioned at the bottom of the green
+        let ballPosition = { x: 5, y: 25 }; // Ball starts at 5% of the width
+        let ballSpeed = { x: 0, y: 0 }; // No vertical speed
+        let holePosition = { x: 95, y: 25 }; // Hole at 95% of the width
         let gameOver = false;
         
-        let slopes = []; // Holds the slopes of the green
+        // For generating the random slopes in the green
+        let slopes = [];
 
         // Function to reset the game and load a new level
         function resetGame() {
             level++;
             strokes = 0;
-            ballPosition = { x: 5, y: 25 }; // Ball on the left side of the green
+            ballPosition = { x: 5, y: 25 }; // Ball at the left side of the green
             ballSpeed = { x: 0, y: 0 }; // No initial vertical speed
             gameOver = false;
             updateScoreboard();
@@ -154,7 +169,7 @@
             strokesDisplay.textContent = `Strokes: ${strokes}`;
         }
 
-        // Set random slopes for each level
+        // Set random slopes for each level (randomizing putting green slope)
         function setRandomTopography() {
             slopes = [];
             const numSlopes = 5 + Math.floor(Math.random() * 5); // Random number of slopes
@@ -174,26 +189,29 @@
         // Update the ball's position based on its speed and slope
         function updateBallPosition() {
             ballPosition.x += ballSpeed.x;
-            
-            // Check for slope effects (only affects horizontal speed)
+
+            // Check for slope effects (affect horizontal speed based on slope)
             for (let slope of slopes) {
                 if (ballPosition.x >= slope.startPos && ballPosition.x <= slope.endPos) {
                     let slopeAngle = slope.slopeAngle * (Math.PI / 180);
                     let slopeFactor = Math.cos(slopeAngle);
-                    ballSpeed.x *= slopeFactor; // Speed up or slow down the ball horizontally
+                    ballSpeed.x *= slopeFactor; // Ball speed changes based on slope
                 }
             }
 
-            // Apply friction to the ball's speed
+            // Apply friction (slows down the ball gradually)
             if (Math.abs(ballSpeed.x) > 0.01) {
-                ballSpeed.x *= 0.99; // Slow down slightly over time
+                ballSpeed.x *= 0.99;
             }
+
+            // Ensure the ball stays inside the blue section (never crossing into green)
+            ballPosition.x = Math.max(5, Math.min(ballPosition.x, 95));
 
             ball.style.left = `${ballPosition.x}%`;
 
-            // Check if ball reaches hole
+            // If the ball reaches the hole
             if (ballPosition.x >= holePosition.x) {
-                alert("Hole in one!");
+                alert("Hole in One!");
                 resetGame();
             }
 
@@ -203,52 +221,54 @@
             }
         }
 
-        // Draw the shot arc preview based on current power and direction
-        function drawShotArc() {
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            canvas.width = game.clientWidth;
-            canvas.height = game.clientHeight;
-            game.appendChild(canvas);
-            
-            let power = powerSlider.value / 100;
-            let direction = directionSlider.value;
-            let angleRad = direction * (Math.PI / 180);
-            let arcX = ballPosition.x;
-            let arcY = ballPosition.y;
-            let speedX = Math.cos(angleRad) * power;
-            let speedY = Math.sin(angleRad) * power;
-            
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.beginPath();
-            ctx.moveTo(arcX * game.clientWidth / 100, arcY * game.clientHeight / 100);
-            for (let t = 0; t < 100; t++) {
-                arcX += speedX;
-                arcY += speedY;
-                speedY += 0.05; // Simulate gravity
-                
-                ctx.lineTo(arcX * game.clientWidth / 100, arcY * game.clientHeight / 100);
-            }
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
-            ctx.lineWidth = 2;
-            ctx.stroke();
-        }
-
-        // Hit the ball based on power and direction
+        // Function to handle the shot and update ball position
         function hitBall() {
             if (gameOver) return;
 
             let power = powerSlider.value / 100;
             let direction = directionSlider.value;
-
             let angleRad = direction * (Math.PI / 180);
+
+            // Apply shot velocity based on direction and power
             ballSpeed.x = Math.cos(angleRad) * power;
 
             strokes++;
             updateScoreboard();
         }
 
-        // Run game update every frame
+        // Draw the shot arc based on power and direction
+        function drawShotArc() {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            document.body.appendChild(canvas);
+
+            let power = powerSlider.value / 100;
+            let direction = directionSlider.value;
+            let angleRad = direction * (Math.PI / 180);
+            let arcX = ballPosition.x;
+            let arcY = ballPosition.y;
+
+            let speedX = Math.cos(angleRad) * power;
+            let speedY = Math.sin(angleRad) * power;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.beginPath();
+            ctx.moveTo(arcX * window.innerWidth / 100, arcY * window.innerHeight / 100);
+            for (let t = 0; t < 100; t++) {
+                arcX += speedX;
+                arcY += speedY;
+                speedY += 0.05; // Gravity effect
+
+                ctx.lineTo(arcX * window.innerWidth / 100, arcY * window.innerHeight / 100);
+            }
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+
+        // Run the game updates every frame
         setRandomTopography();
         updateFlag();
 
@@ -269,5 +289,4 @@
     </script>
 </body>
 </html>
-
 
