@@ -39,7 +39,7 @@ body {
   word-wrap: break-word;
   overflow-wrap: break-word;
   color: rgb(var(--gray-dark));
-  font-size: 18px;
+  font-size: 12px;
   line-height: 1.7;
 }
 main {
@@ -65,10 +65,10 @@ h2 {
   margin-bottom: 1em;
   text-decoration: none;
   color: inherit;	
-  font-size: 26pt;
+  font-size: 24pt;
   align-items: center;
   font-family: "Poppins";
-  letter-spacing: 0.5px;
+  letter-spacing: -0.75px;
 }
 h3 {
   font-size: 1.953em;
@@ -146,10 +146,6 @@ hr {
 
   main {
     padding: 1em;
-  }
-
-  h2 {
-    font-size: 18px;
 }
 
 .sr-only {
