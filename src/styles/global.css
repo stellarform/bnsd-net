@@ -23,8 +23,16 @@
   font-display: swap;
 }
 @font-face {
-  font-family: "Shafarik";
-  src: url("/fonts/Shafarik-Regular.ttf") format("woff");
+  font-family: "Forma";
+  src: url("/fonts/FormaDJRText-Black-Testing.woff") format("woff");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+  text-transform: uppercase;
+}
+@font-face {
+  font-family: "Forma";
+  src: url("/fonts/FormaDJRText-Black-Testing.woff") format("woff");
   font-weight: 700;
   font-style: normal;
   font-display: swap;
