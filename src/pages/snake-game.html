@@ -26,6 +26,7 @@
         canvas {
             background-color: #EAF6CF;
             border-radius: 10px;
+            transition: background-color 0.3s ease; /* Smooth transition for background change */
         }
         #startBtn, #restartBtn {
             position: absolute;
@@ -59,7 +60,6 @@
             justify-content: center;
             font-size: 24px;
             cursor: pointer;
-            cursor-color: black;
             border-radius: 5px;
             box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
         }
@@ -92,23 +92,24 @@
         let direction = "RIGHT";
         let food = { x: 100, y: 100 };
         let running = false;
-        
+
         function drawGame() {
             if (!running) return;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.fillStyle = "red";
             ctx.fillRect(food.x, food.y, 10, 10);
-            ctx.fillStyle = "lime";
+            ctx.fillStyle = "black";
             snake.forEach(segment => ctx.fillRect(segment.x, segment.y, 10, 10));
             moveSnake();
             if (checkCollision()) {
                 running = false;
                 restartBtn.style.display = "block";
+                canvas.style.backgroundColor = "black";  // Change canvas color when game ends
             } else {
                 setTimeout(drawGame, 100);
             }
         }
-        
+
         function moveSnake() {
             let head = { ...snake[0] };
             if (direction === "UP") head.y -= 10;
@@ -122,7 +123,7 @@
                 snake.pop();
             }
         }
-        
+
         function checkCollision() {
             let head = snake[0];
             if (head.x < 0 || head.x >= canvas.width || head.y < 0 || head.y >= canvas.height) {
@@ -130,11 +131,11 @@
             }
             return false;
         }
-        
+
         function changeDirection(newDirection) {
             direction = newDirection;
         }
-        
+
         document.addEventListener("keydown", (event) => {
             event.preventDefault();
             if (event.key === "ArrowUp" && direction !== "DOWN") changeDirection("UP");
@@ -142,19 +143,21 @@
             if (event.key === "ArrowLeft" && direction !== "RIGHT") changeDirection("LEFT");
             if (event.key === "ArrowRight" && direction !== "LEFT") changeDirection("RIGHT");
         });
-        
+
         startBtn.addEventListener("click", () => {
             startBtn.style.display = "none";
             running = true;
+            canvas.style.backgroundColor = "black";  // Change canvas color when game starts
             drawGame();
         });
-        
+
         function restartGame() {
             snake = [{ x: 150, y: 150 }];
             direction = "RIGHT";
             food = { x: 100, y: 100 };
             running = true;
             restartBtn.style.display = "none";
+            canvas.style.backgroundColor = "black";  // Change canvas color on restart
             drawGame();
         }
     </script>
