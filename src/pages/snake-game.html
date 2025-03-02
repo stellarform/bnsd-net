@@ -41,6 +41,10 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
         }
         #restartBtn {
             display: none;
@@ -69,13 +73,6 @@
             border-radius: 5px;
             box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
         }
-        .center-button {
-            grid-column: 1 / span 3; /* Center the button across the full width */
-            grid-row: 1 / span 3; /* Center the button across the full height */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
     </style>
 </head>
 <body>
@@ -88,14 +85,13 @@
             <div class="button" onclick="changeDirection('UP')">▲</div>
             <div></div>
             <div class="button" onclick="changeDirection('LEFT')">◄</div>
-            <div class="center-button">
-                <button id="startBtn">Start</button>
-                <button id="restartBtn" onclick="restartGame()">Restart</button>
-            </div>
             <div></div>
             <div class="button" onclick="changeDirection('RIGHT')">►</div>
             <div></div>
             <div class="button" onclick="changeDirection('DOWN')">▼</div>
+            <!-- Start and Restart buttons centered in the grid -->
+            <button id="startBtn">Start</button>
+            <button id="restartBtn" onclick="restartGame()">Restart</button>
         </div>
     </div>
     <script>
@@ -113,7 +109,7 @@
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.fillStyle = "red";
             ctx.fillRect(food.x, food.y, 10, 10);
-            ctx.fillStyle = "black";
+            ctx.fillStyle = "lime";
             snake.forEach(segment => ctx.fillRect(segment.x, segment.y, 10, 10));
             moveSnake();
             if (checkCollision()) {
