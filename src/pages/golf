@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simple Golf Putting Game with Power Bar</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #87CEEB;
+    }
+    .game-container {
+      text-align: center;
+    }
+    .course {
+      width: 800px;
+      height: 400px;
+      background-color: #228B22;
+      position: relative;
+      border: 2px solid #006400;
+      margin-bottom: 20px;
+    }
+    .hole {
+      position: absolute;
+      top: 250px;
+      left: 700px;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background-color: brown;
+    }
+    .ball {
+      position: absolute;
+      top: 350px;
+      left: 50px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background-color: white;
+    }
+    .power-bar {
+      width: 200px;
+      height: 20px;
+      background-color: #ddd;
+      margin-top: 10px;
+      position: relative;
+    }
+    .power-fill {
+      width: 0%;
+      height: 100%;
+      background-color: #32CD32;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+    .slider {
+      width: 20px;
+      height: 20px;
+      background-color: #32CD32;
+      border-radius: 50%;
+      position: absolute;
+      top: 0;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="game-container">
+    <h1>Golf Putting Game</h1>
+
+    <div class="course">
+      <div class="hole"></div>
+      <div class="ball"></div>
+    </div>
+
+    <div class="power-bar" id="powerBar">
+      <div class="power-fill" id="powerFill"></div>
+      <div class="slider" id="slider"></div>
+    </div>
+
+    <button onclick="puttBall()">Putt the Ball</button>
+  </div>
+
+  <script>
+    const powerBar = document.getElementById('powerBar');
+    const powerFill = document.getElementById('powerFill');
+    const slider = document.getElementById('slider');
+    const ball = document.querySelector('.ball');
+    const hole = document.querySelector('.hole');
+
+    let isDragging = false;
+    let power = 0;
+
+    slider.addEventListener('mousedown', function(event) {
+      isDragging = true;
+      document.addEventListener('mousemove', dragSlider);
+      document.addEventListener('mouseup', function() {
+        isDragging = false;
+        document.removeEventListener('mousemove', dragSlider);
+      });
+    });
+
+    function dragSlider(event) {
+      if (isDragging) {
+        let newLeft = event.clientX - powerBar.offsetLeft - slider.offsetWidth / 2;
+        if (newLeft < 0) newLeft = 0;
+        if (newLeft > powerBar.offsetWidth - slider.offsetWidth) newLeft = powerBar.offsetWidth - slider.offsetWidth;
+        slider.style.left = newLeft + 'px';
+        power = (newLeft / (powerBar.offsetWidth - slider.offsetWidth)) * 100;
+        powerFill.style.width = power + '%';
+      }
+    }
+
+    function puttBall() {
+      const ballPosition = ball.getBoundingClientRect();
+      const holePosition = hole.getBoundingClientRect();
+
+      const distanceToHole = holePosition.left - ballPosition.left;
+      const powerFactor = (power / 100) * distanceToHole;
+
+      let ballX = 50;
+      let ballY = 350;
+
+      let interval = setInterval(function() {
+        ballX += powerFactor / 10;
+        ball.style.left = ballX + 'px';
+
+        if (ballX >= holePosition.left - 20) {
+          clearInterval(interval);
+          alert('You made the putt! Congratulations!');
+        }
+      }, 20);
+    }
+  </script>
+</body>
+</html>
