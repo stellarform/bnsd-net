@@ -10,20 +10,19 @@
             padding: 0;
             overflow: hidden;
             height: 100%;
-            background-color: lightblue;
         }
 
         #game {
             position: absolute;
             width: 100%;
             height: 100%;
-            background: lightblue;
+            background: #f4f1a1; /* Simple light sand background */
         }
 
         #sky {
             height: 50%;
             width: 100%;
-            background: lightblue;
+            background: #a2d5f2; /* Light blue for sky */
             position: absolute;
             top: 0;
         }
@@ -33,24 +32,22 @@
             width: 100%;
             position: absolute;
             bottom: 0;
-            background-color: #4CAF50;
-            overflow: hidden;
-            border-top: 2px solid #228B22;
+            background-color: #4CAF50; /* Simple green ground */
         }
 
         .hole {
             position: absolute;
-            bottom: 15%;
-            left: 95%;
-            width: 50px;
+            bottom: 5%;  /* Hole placed at the bottom center */
+            left: 90%;
+            width: 40px;
             height: 20px;
-            background-color: #333;
+            background-color: #333; /* Dark hole */
             border-radius: 5px;
         }
 
         .flag {
             position: absolute;
-            top: -30px;
+            top: -25px;
             left: 50%;
             transform: translateX(-50%);
             font-size: 12px;
@@ -60,8 +57,8 @@
 
         .ball {
             position: absolute;
-            left: 5%; /* Ball starts on the left side of the green section */
-            bottom: 25%;
+            left: 5%;  /* Ball starts at the left edge */
+            bottom: 25%;  /* Slightly above the ground */
             width: 20px;
             height: 20px;
             background-color: white;
@@ -141,23 +138,19 @@
 
         let level = 1;
         let strokes = 0;
-        let ballPosition = { x: 5, y: 25 }; // Ball starts at 5% of the width (left side)
+        let ballPosition = { x: 5, y: 25 }; // Ball starts at left side
         let ballSpeed = { x: 0, y: 0 }; // No vertical speed
-        let holePosition = { x: 95, y: 25 }; // Hole at 95% of the width
+        let holePosition = { x: 95, y: 25 }; // Hole at the right side
         let gameOver = false;
-        
-        // For generating the random slopes in the green
-        let slopes = [];
 
-        // Function to reset the game and load a new level
+        // Function to reset the game
         function resetGame() {
             level++;
             strokes = 0;
-            ballPosition = { x: 5, y: 25 }; // Ball at the left side of the green
-            ballSpeed = { x: 0, y: 0 }; // No initial vertical speed
+            ballPosition = { x: 5, y: 25 }; // Ball at left side
+            ballSpeed = { x: 0, y: 0 }; // Reset ball speed
             gameOver = false;
             updateScoreboard();
-            setRandomTopography();
             updateFlag();
             ball.style.left = `${ballPosition.x}%`;
             ball.style.bottom = `${ballPosition.y}%`;
@@ -169,47 +162,26 @@
             strokesDisplay.textContent = `Strokes: ${strokes}`;
         }
 
-        // Set random slopes for each level (randomizing putting green slope)
-        function setRandomTopography() {
-            slopes = [];
-            const numSlopes = 5 + Math.floor(Math.random() * 5); // Random number of slopes
-            for (let i = 0; i < numSlopes; i++) {
-                let startPos = Math.random() * 100; // Start position of the slope
-                let endPos = startPos + Math.random() * 20; // End position of the slope
-                let slopeAngle = Math.random() * 30 - 15; // Angle of the slope (-15 to +15 degrees)
-                slopes.push({ startPos, endPos, slopeAngle });
-            }
-        }
-
-        // Update the flag to reflect the current hole number
+        // Update the flag (hole number)
         function updateFlag() {
             flag.textContent = `Hole ${level}`;
         }
 
-        // Update the ball's position based on its speed and slope
+        // Update ball position
         function updateBallPosition() {
             ballPosition.x += ballSpeed.x;
 
-            // Check for slope effects (affect horizontal speed based on slope)
-            for (let slope of slopes) {
-                if (ballPosition.x >= slope.startPos && ballPosition.x <= slope.endPos) {
-                    let slopeAngle = slope.slopeAngle * (Math.PI / 180);
-                    let slopeFactor = Math.cos(slopeAngle);
-                    ballSpeed.x *= slopeFactor; // Ball speed changes based on slope
-                }
-            }
-
-            // Apply friction (slows down the ball gradually)
+            // Apply friction (slow down ball gradually)
             if (Math.abs(ballSpeed.x) > 0.01) {
                 ballSpeed.x *= 0.99;
             }
 
-            // Ensure the ball stays inside the blue section (never crossing into green)
+            // Keep ball within boundaries
             ballPosition.x = Math.max(5, Math.min(ballPosition.x, 95));
 
             ball.style.left = `${ballPosition.x}%`;
 
-            // If the ball reaches the hole
+            // Check if ball reaches the hole
             if (ballPosition.x >= holePosition.x) {
                 alert("Hole in One!");
                 resetGame();
@@ -221,7 +193,7 @@
             }
         }
 
-        // Function to handle the shot and update ball position
+        // Function to hit the ball
         function hitBall() {
             if (gameOver) return;
 
@@ -229,65 +201,30 @@
             let direction = directionSlider.value;
             let angleRad = direction * (Math.PI / 180);
 
-            // Apply shot velocity based on direction and power
+            // Calculate the ball's velocity
             ballSpeed.x = Math.cos(angleRad) * power;
 
             strokes++;
             updateScoreboard();
         }
 
-        // Draw the shot arc based on power and direction
-        function drawShotArc() {
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            document.body.appendChild(canvas);
-
-            let power = powerSlider.value / 100;
-            let direction = directionSlider.value;
-            let angleRad = direction * (Math.PI / 180);
-            let arcX = ballPosition.x;
-            let arcY = ballPosition.y;
-
-            let speedX = Math.cos(angleRad) * power;
-            let speedY = Math.sin(angleRad) * power;
-
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.beginPath();
-            ctx.moveTo(arcX * window.innerWidth / 100, arcY * window.innerHeight / 100);
-            for (let t = 0; t < 100; t++) {
-                arcX += speedX;
-                arcY += speedY;
-                speedY += 0.05; // Gravity effect
-
-                ctx.lineTo(arcX * window.innerWidth / 100, arcY * window.innerHeight / 100);
-            }
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
-            ctx.lineWidth = 2;
-            ctx.stroke();
-        }
-
-        // Run the game updates every frame
-        setRandomTopography();
-        updateFlag();
-
-        setInterval(() => {
-            if (!gameOver) {
-                updateBallPosition();
-                drawShotArc();
-            }
-        }, 20);
-
-        // Event listener for the shot button
+        // Event listener for shot button
         shotButton.addEventListener("click", () => {
             hitBall();
         });
 
-        powerSlider.addEventListener('input', drawShotArc);
-        directionSlider.addEventListener('input', drawShotArc);
+        // Run the game updates every frame
+        setInterval(() => {
+            if (!gameOver) {
+                updateBallPosition();
+            }
+        }, 20);
+
+        powerSlider.addEventListener('input', updateScoreboard);
+        directionSlider.addEventListener('input', updateScoreboard);
     </script>
 </body>
 </html>
+
 
 
