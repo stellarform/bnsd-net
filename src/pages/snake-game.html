@@ -27,6 +27,7 @@
             background-color: #EAF6CF;
             border-radius: 10px;
             transition: background-color 0.3s ease; /* Smooth transition for background change */
+            position: relative;  /* Position for button centering */
         }
         #startBtn, #restartBtn {
             position: absolute;
@@ -36,6 +37,7 @@
             padding: 10px 20px;
             font-size: 18px;
             cursor: pointer;
+            corner-radius: 25px;
         }
         #restartBtn {
             display: none;
@@ -98,13 +100,13 @@
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.fillStyle = "red";
             ctx.fillRect(food.x, food.y, 10, 10);
-            ctx.fillStyle = "black";
+            ctx.fillStyle = "lime";
             snake.forEach(segment => ctx.fillRect(segment.x, segment.y, 10, 10));
             moveSnake();
             if (checkCollision()) {
                 running = false;
                 restartBtn.style.display = "block";
-                canvas.style.backgroundColor = "black";  // Change canvas color when game ends
+                canvas.style.backgroundColor = "black";  // Change canvas color when buttons appear
             } else {
                 setTimeout(drawGame, 100);
             }
@@ -147,7 +149,7 @@
         startBtn.addEventListener("click", () => {
             startBtn.style.display = "none";
             running = true;
-            canvas.style.backgroundColor = "black";  // Change canvas color when game starts
+            canvas.style.backgroundColor = "#EAF6CF";  // Reset canvas color once game starts
             drawGame();
         });
 
@@ -157,7 +159,7 @@
             food = { x: 100, y: 100 };
             running = true;
             restartBtn.style.display = "none";
-            canvas.style.backgroundColor = "black";  // Change canvas color on restart
+            canvas.style.backgroundColor = "#EAF6CF";  // Reset canvas color after restarting
             drawGame();
         }
     </script>
