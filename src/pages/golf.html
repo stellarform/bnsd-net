@@ -19,7 +19,7 @@
         }
         .scoreboard {
             position: absolute;
-            top: 20px;
+            bottom: 110px; /* Adjusted to be above the power bar */
             left: 50%;
             transform: translateX(-50%);
             font-family: Arial, sans-serif;
@@ -32,8 +32,9 @@
         }
         .power-bar-container {
             position: absolute;
-            bottom: 50px;
-            right: 30px;
+            bottom: 70px; /* Adjusted height for power bar */
+            left: 50%; /* Center horizontally */
+            transform: translateX(-50%);
             width: 300px; /* Horizontal power bar */
             height: 50px;
             background: #ccc;
@@ -120,8 +121,7 @@
 
     function drawHole() {
         ctx.beginPath();
-        // Increase the hole's radius by 33% (1.33 * 10 = 13.3)
-        const holeRadius = 13.3; // 33% bigger hole
+        const holeRadius = 13.3;  // Updated hole radius after increase
         ctx.arc(holeX, holeY, holeRadius, 0, Math.PI); // Draw a semi-circle with increased size
         ctx.fillStyle = "#87CEEB"; // Light blue color for the hole
         ctx.fill();
@@ -168,6 +168,15 @@
                 // Lower the ball further down towards the bottom of the hole, simulating gravity
                 if (ballY < holeY + holeRadius + 5) {  // Allow ball to drop lower into the hole
                     ballSpeedY += 0.1;  // Gradual fall towards the hole's bottom
+                }
+
+                // Ball bounces off the back edge if hit too hard
+                if (ballY < holeY) {
+                    const bounceDistance = holeY - ballY + ballRadius;
+                    if (ballX > holeX - holeRadius && ballX < holeX + holeRadius) {
+                        ballSpeedY = -ballSpeedY * 0.5;  // Bounce off the back with reduced speed
+                        ballY = holeY + holeRadius + bounceDistance;  // Make sure the ball doesn't go below the hole
+                    }
                 }
 
                 // Only proceed to the next hole if the ball is at the lowest point of the hole (bottom of the arc)
