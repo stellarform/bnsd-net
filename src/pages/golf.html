@@ -169,8 +169,8 @@
         if (moving) {
             ballX += ballSpeedX;
             ballY += ballSpeedY;
-            ballSpeedX *= 0.85; // Reduced by 15% (slower speed)
-            ballSpeedY *= 0.85; // Reduced by 15% (slower speed)
+            ballSpeedX *= 0.98;
+            ballSpeedY *= 0.98;
 
             // Gravity effect when the ball is over the hole
             const holeRadius = 13.3;  // Updated hole radius after increase
@@ -221,8 +221,6 @@
         // Generate a new hole position
         holeX = canvas.width - Math.random() * 200 - 50;
         holeY = canvas.height / 2; // Generate new hole position on the surface of the green
-
-        resetPowerBar(); // Reset the power bar after the shot
     }
 
     function nextHole() {
@@ -241,8 +239,6 @@
         // Generate a new hole position
         holeX = canvas.width - Math.random() * 200 - 50;
         holeY = canvas.height / 2; // Generate new hole position on the surface of the green
-
-        resetPowerBar(); // Reset the power bar after the hole
     }
 
     function adjustPower(e) {
@@ -269,11 +265,6 @@
             ballSpeedX = Math.cos(0) * powerLevel * 2;
             ballSpeedY = Math.sin(0) * powerLevel * 2;
         }
-    }
-
-    function resetPowerBar() {
-        powerLevel = 0;
-        powerSwitch.style.transform = `translateX(0px)`;
     }
 
     powerBarContainer.addEventListener('mousedown', startDrag);
