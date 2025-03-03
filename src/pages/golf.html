@@ -40,7 +40,6 @@
             border-radius: 25px;
             display: flex;
             align-items: center;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
             cursor: pointer;
         }
         .power-bar {
@@ -55,8 +54,8 @@
             position: absolute;
             width: 30px; /* Square switch */
             height: 30px;
-            background: silver;
-            border-radius: 5px;
+            background: white;
+            border-radius: 50%;
             cursor: grab;
             left: 0; /* Start at the left */
             transition: transform 0.1s ease-out;
@@ -127,16 +126,16 @@
 
     function drawPowerPreview() {
         if (!moving) {
+            // Create a gradient for the power preview line (cone shape)
+            let gradient = ctx.createLinearGradient(ballX, ballY, ballX + (powerLevel * 15), ballY);
+            gradient.addColorStop(0, 'green');
+            gradient.addColorStop(1, 'red');
+            
             ctx.beginPath();
-            ctx.strokeStyle = "rgba(255, 0, 0, 0.7)";
-            ctx.lineWidth = 2;
             ctx.moveTo(ballX, ballY);
-
-            // Calculate max preview length as 35% of screen width
-            let maxPreviewLength = canvas.width * 0.35;
-            let previewLength = Math.min(powerLevel * 15, maxPreviewLength);
-
-            ctx.lineTo(ballX + previewLength, ballY);
+            ctx.lineTo(ballX + (powerLevel * 15), ballY);  // Preview line direction
+            ctx.strokeStyle = gradient;
+            ctx.lineWidth = 4;
             ctx.stroke();
             ctx.closePath();
         }
