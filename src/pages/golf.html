@@ -24,21 +24,21 @@
             left: 50%;
             transform: translateX(-50%);
             width: 350px; /* Width of the entire component */
-            background: rgba(255, 255, 255, 0.8); /* Slightly transparent white background */
+            background: #87CEEB; /* Set the background to light blue */
             border-radius: 25px;
             padding: 15px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            margin-top: 75px; /* Move the component 75px below the intersection */
+            margin-top: 55px; /* Move the component 55px below the intersection */
         }
         .scoreboard {
             font-family: Arial, sans-serif;
             font-size: 20px;
-            color: black;
+            color: #000000; /* Solid black text for better readability */
             text-align: center;
             width: 100%;
+            opacity: 0.9; /* Slight transparency to make text more legible */
         }
         .scoreboard p {
             margin: 5px 0;
@@ -178,9 +178,23 @@
 
             // Ball should not get behind the hole visually, ensure it's drawn above the hole
             if (distanceToHole < holeRadius + ballRadius) {
-                // Lower the ball further down towards the bottom of the hole, simulating gravity
-                if (ballY < holeY + holeRadius + 5) {  // Allow ball to drop lower into the hole
-                    ballSpeedY += 0.1;  // Gradual fall towards the hole's bottom
+                // Ball can fall into the hole only if it is moving slowly enough
+                if (Math.abs(ballSpeedX) < 1.5 && Math.abs(ballSpeedY) < 1.5) {
+                    // Lower the ball further down towards the bottom of the hole, simulating gravity
+                    if (ballY < holeY + holeRadius + 5) {  // Allow ball to drop lower into the hole
+                        ballSpeedY += 0.1;  // Gradual fall towards the hole's bottom
+                    }
+                } else {
+                    // Ball is moving too fast, pass over the hole
+                    if (ballY > holeY) {
+                        ballSpeedX *= 1.1;  // Make ball bounce off with an increased speed to simulate it going over the hole
+                    }
+                }
+
+                // Bounce up on Y-axis when the ball hits the right of the hole with high speed
+                if (ballX > holeX + holeRadius && Math.abs(ballSpeedX) > 2) {
+                    ballSpeedY = -Math.abs(ballSpeedY) * 0.5;  // Bounce upward on the Y-axis with a reduced speed
+                    ballX = holeX + holeRadius + 5; // Prevent ball from sticking to the right side
                 }
 
                 // Ball bounces off the back edge if hit too hard
@@ -226,10 +240,8 @@
     function nextHole() {
         holeNumber++;
         strokes = 0;
-        totalStrokes++; // Count the completion of the hole
         document.getElementById('hole-number').textContent = holeNumber;
         document.getElementById('strokes').textContent = strokes;
-        document.getElementById('total-strokes').textContent = totalStrokes; // Update total strokes
 
         // Immediately reset the ball position
         ballX = 50;
@@ -243,65 +255,43 @@
         holeY = canvas.height / 2; // Generate new hole position on the surface of the green
     }
 
-    function handlePowerStart(event) {
-        event.preventDefault();
+    function adjustPower(e) {
+        if (!moving) {
+            if (isDragging) {
+                let offsetX = e.clientX - powerBarContainer.getBoundingClientRect().left;
+                offsetX = Math.max(0, Math.min(offsetX, powerBarContainer.offsetWidth));
+                powerLevel = (offsetX / powerBarContainer.offsetWidth) * maxPower;
+
+                powerSwitch.style.transform = `translateX(${offsetX - powerSwitch.offsetWidth / 2}px)`;
+            }
+        }
+    }
+
+    function startDrag(e) {
         isDragging = true;
+        adjustPower(e);
     }
 
-    function handlePowerMove(event) {
-        if (!isDragging) return;
-
-        // Get the mouse/touch position
-        let clientX = event.touches ? event.touches[0].clientX : event.clientX;
-        let rect = powerBarContainer.getBoundingClientRect();
-
-        // Constrain the switch movement from left to right (never goes past the right side of the container)
-        let x = Math.min(Math.max(clientX - rect.left, 0), rect.width - powerSwitch.offsetWidth);
-
-        // Calculate power level based on position
-        powerLevel = Math.round((x / rect.width) * maxPower);
-
-        // Move the switch button within bounds
-        powerSwitch.style.transform = `translateX(${x}px)`;
+    function stopDrag() {
+        if (isDragging) {
+            isDragging = false;
+            moving = true;
+            ballSpeedX = Math.cos(0) * powerLevel * 0.7;  // Reduced power scale for slower ball movement
+            ballSpeedY = Math.sin(0) * powerLevel * 0.7;
+        }
     }
 
-    function handlePowerEnd(event) {
-        if (!isDragging) return;
-        isDragging = false;
-        shootBall();
-        resetPowerBarButton();
-    }
+    powerBarContainer.addEventListener('mousedown', startDrag);
+    document.addEventListener('mousemove', adjustPower);
+    document.addEventListener('mouseup', stopDrag);
 
-    function shootBall() {
-        if (moving) return;
-        ballSpeedX = powerLevel * 5;  // Increased multiplier for more noticeable speed
-        ballSpeedY = 0;
-        moving = true;
-        strokes++;
-        totalStrokes++; // Count total strokes
-        document.getElementById('strokes').textContent = strokes;
-        document.getElementById('total-strokes').textContent = totalStrokes; // Update total strokes
-    }
-
-    function resetPowerBarButton() {
-        powerSwitch.style.transform = "translateX(0px)"; // Reset button to the left
-        powerLevel = 0; // Reset the power level
-    }
+    window.addEventListener('resize', resizeCanvas);
 
     function gameLoop() {
         updateGame();
         moveBall();
         requestAnimationFrame(gameLoop);
     }
-
-    window.addEventListener('resize', resizeCanvas);
-
-    powerSwitch.addEventListener('touchstart', handlePowerStart);
-    powerSwitch.addEventListener('mousedown', handlePowerStart);
-    window.addEventListener('touchmove', handlePowerMove);
-    window.addEventListener('mousemove', handlePowerMove);
-    window.addEventListener('touchend', handlePowerEnd);
-    window.addEventListener('mouseup', handlePowerEnd);
 
     resizeCanvas();
     gameLoop();
