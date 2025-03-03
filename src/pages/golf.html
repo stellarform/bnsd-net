@@ -17,42 +17,30 @@
             display: block;
             background: linear-gradient(to bottom, #87CEEB 50%, #228B22 50%);
         }
-        .ui-container {
+        .scoreboard {
             position: absolute;
-            top: 50%; /* Position at 50% of the canvas height */
-            transform: translateY(-50%); /* Center it vertically */
+            top: 20px;
             left: 50%;
             transform: translateX(-50%);
-            width: 350px; /* Width of the entire component */
-            background: #87CEEB; /* Set the background to light blue */
-            border-radius: 25px;
-            padding: 15px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-top: 55px; /* Move the component 55px below the intersection */
-        }
-        .scoreboard {
             font-family: Arial, sans-serif;
             font-size: 20px;
-            color: #000000; /* Solid black text for better readability */
+            color: black;
             text-align: center;
-            width: 100%;
-            opacity: 0.9; /* Slight transparency to make text more legible */
         }
         .scoreboard p {
             margin: 5px 0;
         }
         .power-bar-container {
-            position: relative;
-            width: 100%;
+            position: absolute;
+            bottom: 50px;
+            right: 30px;
+            width: 300px; /* Horizontal power bar */
             height: 50px;
             background: #ccc;
             border-radius: 25px;
             display: flex;
             align-items: center;
             cursor: pointer;
-            margin-top: 15px; /* Adds space between scoreboard and power bar */
         }
         .power-bar {
             width: 100%;
@@ -76,20 +64,18 @@
 </head>
 <body>
 
-<div class="ui-container">
-    <div class="scoreboard">
-        <p>Hole: <span id="hole-number">1</span></p>
-        <p>Strokes: <span id="strokes">0</span></p>
-        <p>Total Strokes: <span id="total-strokes">0</span></p> <!-- Added total strokes -->
-    </div>
-
-    <div class="power-bar-container">
-        <div class="power-bar"></div>
-        <div class="power-switch"></div>
-    </div>
+<div class="scoreboard">
+    <p>Hole: <span id="hole-number">1</span></p>
+    <p>Strokes: <span id="strokes">0</span></p>
+    <p>Total Strokes: <span id="total-strokes">0</span></p> <!-- Added total strokes -->
 </div>
 
 <canvas id="gameCanvas"></canvas>
+
+<div class="power-bar-container">
+    <div class="power-bar"></div>
+    <div class="power-switch"></div>
+</div>
 
 <script>
     const canvas = document.getElementById('gameCanvas');
@@ -134,7 +120,8 @@
 
     function drawHole() {
         ctx.beginPath();
-        const holeRadius = 13.3;  // Updated hole radius after increase
+        // Increase the hole's radius by 33% (1.33 * 10 = 13.3)
+        const holeRadius = 13.3; // 33% bigger hole
         ctx.arc(holeX, holeY, holeRadius, 0, Math.PI); // Draw a semi-circle with increased size
         ctx.fillStyle = "#87CEEB"; // Light blue color for the hole
         ctx.fill();
@@ -169,8 +156,8 @@
         if (moving) {
             ballX += ballSpeedX;
             ballY += ballSpeedY;
-            ballSpeedX *= 0.85; // Reduced by 15% (slower speed)
-            ballSpeedY *= 0.85; // Reduced by 15% (slower speed)
+            ballSpeedX *= 0.98;
+            ballSpeedY *= 0.98;
 
             // Gravity effect when the ball is over the hole
             const holeRadius = 13.3;  // Updated hole radius after increase
@@ -178,21 +165,12 @@
 
             // Ball should not get behind the hole visually, ensure it's drawn above the hole
             if (distanceToHole < holeRadius + ballRadius) {
-                // Lower the ball further down towards the bottom of the hole, simulating gravity
-                if (ballY < holeY + holeRadius + 5) {  // Allow ball to drop lower into the hole
+                // Lower the ball towards the bottom of the hole, simulating gravity
+                if (ballY < holeY + holeRadius) {
                     ballSpeedY += 0.1;  // Gradual fall towards the hole's bottom
                 }
 
-                // Ball bounces off the back edge if hit too hard
-                if (ballY < holeY) {
-                    const bounceDistance = holeY - ballY + ballRadius;
-                    if (ballX > holeX - holeRadius && ballX < holeX + holeRadius) {
-                        ballSpeedY = -ballSpeedY * 0.5;  // Bounce off the back with reduced speed
-                        ballY = holeY + holeRadius + bounceDistance;  // Make sure the ball doesn't go below the hole
-                    }
-                }
-
-                // Only proceed to the next hole if the ball is at the lowest point of the hole (bottom of the arc)
+                // If the ball is inside the hole radius, check if it passes over the hole
                 if (ballY >= holeY + holeRadius) {
                     nextHole(); // Ball has fallen into the hole
                 }
@@ -226,8 +204,10 @@
     function nextHole() {
         holeNumber++;
         strokes = 0;
+        totalStrokes++; // Count the completion of the hole
         document.getElementById('hole-number').textContent = holeNumber;
         document.getElementById('strokes').textContent = strokes;
+        document.getElementById('total-strokes').textContent = totalStrokes; // Update total strokes
 
         // Immediately reset the ball position
         ballX = 50;
@@ -241,37 +221,50 @@
         holeY = canvas.height / 2; // Generate new hole position on the surface of the green
     }
 
-    function adjustPower(e) {
-        if (!moving) {
-            if (isDragging) {
-                let offsetX = e.clientX - powerBarContainer.getBoundingClientRect().left;
-                offsetX = Math.max(0, Math.min(offsetX, powerBarContainer.offsetWidth));
-                powerLevel = (offsetX / powerBarContainer.offsetWidth) * maxPower;
-
-                powerSwitch.style.transform = `translateX(${offsetX - powerSwitch.offsetWidth / 2}px)`;
-            }
-        }
-    }
-
-    function startDrag(e) {
+    function handlePowerStart(event) {
+        event.preventDefault();
         isDragging = true;
-        adjustPower(e);
     }
 
-    function stopDrag() {
-        if (isDragging) {
-            isDragging = false;
-            moving = true;
-            ballSpeedX = Math.cos(0) * powerLevel * 2;
-            ballSpeedY = Math.sin(0) * powerLevel * 2;
-        }
+    function handlePowerMove(event) {
+        if (!isDragging) return;
+
+        // Get the mouse/touch position
+        let clientX = event.touches ? event.touches[0].clientX : event.clientX;
+        let rect = powerBarContainer.getBoundingClientRect();
+
+        // Constrain the switch movement from left to right (never goes past the right side of the container)
+        let x = Math.min(Math.max(clientX - rect.left, 0), rect.width - powerSwitch.offsetWidth);
+
+        // Calculate power level based on position
+        powerLevel = Math.round((x / rect.width) * maxPower);
+
+        // Move the switch button within bounds
+        powerSwitch.style.transform = `translateX(${x}px)`;
     }
 
-    powerBarContainer.addEventListener('mousedown', startDrag);
-    document.addEventListener('mousemove', adjustPower);
-    document.addEventListener('mouseup', stopDrag);
+    function handlePowerEnd(event) {
+        if (!isDragging) return;
+        isDragging = false;
+        shootBall();
+        resetPowerBarButton();
+    }
 
-    window.addEventListener('resize', resizeCanvas);
+    function shootBall() {
+        if (moving) return;
+        ballSpeedX = powerLevel * 5;  // Increased multiplier for more noticeable speed
+        ballSpeedY = 0;
+        moving = true;
+        strokes++;
+        totalStrokes++; // Count total strokes
+        document.getElementById('strokes').textContent = strokes;
+        document.getElementById('total-strokes').textContent = totalStrokes; // Update total strokes
+    }
+
+    function resetPowerBarButton() {
+        powerSwitch.style.transform = "translateX(0px)"; // Reset button to the left
+        powerLevel = 0; // Reset the power level
+    }
 
     function gameLoop() {
         updateGame();
@@ -279,9 +272,19 @@
         requestAnimationFrame(gameLoop);
     }
 
+    window.addEventListener('resize', resizeCanvas);
+
+    powerSwitch.addEventListener('touchstart', handlePowerStart);
+    powerSwitch.addEventListener('mousedown', handlePowerStart);
+    window.addEventListener('touchmove', handlePowerMove);
+    window.addEventListener('mousemove', handlePowerMove);
+    window.addEventListener('touchend', handlePowerEnd);
+    window.addEventListener('mouseup', handlePowerEnd);
+
     resizeCanvas();
     gameLoop();
 </script>
 
 </body>
 </html>
+
