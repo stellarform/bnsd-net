@@ -47,12 +47,11 @@
     let ballX, ballY, ballRadius = 5;
     let holeX, holeY;
     let strokes = 0, holeNumber = 1;
-    let amplitude = Math.random() * 10 + 1; // Random terrain effect
     let power = 0;
-    let isCharging = false;
-    let ballSpeed = 0;
+    let charging = false;
     let moving = false;
-    
+    let ballSpeed = 0;
+
     function resizeCanvas() {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
@@ -62,7 +61,7 @@
     function initializeGame() {
         ballX = 50;
         ballY = canvas.height / 2 + 20; // Fixed Y-position on the green
-        holeX = canvas.width - 50;
+        holeX = canvas.width - 100;
         holeY = canvas.height / 2 + 20; // Hole on the same surface
         strokes = 0;
         document.getElementById('strokes').textContent = strokes;
@@ -103,11 +102,24 @@
         ctx.fillRect(50, canvas.height - 50, power, 10); // Power fill
     }
 
+    function drawPowerPreview() {
+        if (!moving) {
+            ctx.beginPath();
+            ctx.strokeStyle = "rgba(255, 0, 0, 0.5)";
+            ctx.lineWidth = 2;
+            ctx.moveTo(ballX, ballY);
+            ctx.lineTo(ballX + power * 3, ballY);
+            ctx.stroke();
+            ctx.closePath();
+        }
+    }
+
     function updateGame() {
         drawBackground();
         drawHole();
         drawBall();
         drawPowerMeter();
+        drawPowerPreview();
     }
 
     function hitBall() {
@@ -146,7 +158,6 @@
         ballY = canvas.height / 2 + 20; // Reset ball
         holeX = canvas.width - Math.random() * 100 - 50; // Random hole position
         holeY = canvas.height / 2 + 20; // Keep hole on surface
-        amplitude = Math.random() * 10 + 1; // New amplitude
     }
 
     function gameLoop() {
@@ -158,20 +169,17 @@
 
     window.addEventListener('resize', resizeCanvas);
     window.addEventListener('keydown', (event) => {
-        if (event.key === " ") {
-            isCharging = true;
+        if (event.key.toLowerCase() === "p") {
+            charging = !charging;
         }
-    });
-
-    window.addEventListener('keyup', (event) => {
-        if (event.key === " " && isCharging) {
+        if (event.key.toLowerCase() === "s") {
             hitBall();
-            isCharging = false;
+            charging = false; // Reset power meter
         }
     });
 
     setInterval(() => {
-        if (isCharging && power < 100) {
+        if (charging && power < 100) {
             power += 2;
             document.getElementById('power').textContent = power;
         }
@@ -183,4 +191,3 @@
 
 </body>
 </html>
-
