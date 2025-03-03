@@ -119,7 +119,7 @@
     function drawHole() {
         ctx.beginPath();
         // Draw the hole as a full circle, but we'll "cut" the top part where the blue overlaps.
-        ctx.arc(holeX, holeY, 10, Math.PI, 0); // Draw a semi-circle, cutting off the top
+        ctx.arc(holeX, holeY, 10, 0, Math.PI); // Draw a semi-circle, now flipped with the flat part on top
         ctx.fillStyle = "#000000"; // Hole color
         ctx.fill();
         ctx.closePath();
