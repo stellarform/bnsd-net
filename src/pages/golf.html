@@ -169,13 +169,6 @@
             ballSpeedX *= 0.98;
             ballSpeedY *= 0.98;
 
-            // Stop the ball when speed is low enough
-            if (Math.abs(ballSpeedX) < 0.1 && Math.abs(ballSpeedY) < 0.1) {
-                moving = false;
-                ballSpeedX = 0;
-                ballSpeedY = 0;
-            }
-
             const holeRadius = 13.3;
             const distanceToHole = Math.sqrt(Math.pow(ballX - holeX, 2) + Math.pow(ballY - holeY, 2));
 
@@ -204,7 +197,7 @@
         ballX = 50;
         ballY = canvas.height / 2 - ballRadius;
 
-        moving = false;  // Ball stopped, next shot can be taken
+        moving = false;
     }
 
     function nextHole() {
@@ -244,8 +237,7 @@
     }
 
     function shootBall() {
-        if (moving) return;  // Don't allow shooting if the ball is moving
-
+        if (moving) return;
         ballSpeedX = powerLevel * 5;
         ballSpeedY = 0;
         moving = true;
@@ -263,9 +255,6 @@
     function gameLoop() {
         updateGame();
         moveBall();
-        if (!moving) {  // Only allow power adjustment if ball is not moving
-            resetPowerBarButton();
-        }
         requestAnimationFrame(gameLoop);
     }
 
