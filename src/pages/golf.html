@@ -165,12 +165,12 @@
 
             // Ball should not get behind the hole visually, ensure it's drawn above the hole
             if (distanceToHole < holeRadius + ballRadius) {
-                // Lower the ball towards the bottom of the hole, simulating gravity
-                if (ballY < holeY + holeRadius) {
+                // Lower the ball further down towards the bottom of the hole, simulating gravity
+                if (ballY < holeY + holeRadius + 5) {  // Allow ball to drop lower into the hole
                     ballSpeedY += 0.1;  // Gradual fall towards the hole's bottom
                 }
 
-                // If the ball is inside the hole radius, check if it passes over the hole
+                // Only proceed to the next hole if the ball is at the lowest point of the hole (bottom of the arc)
                 if (ballY >= holeY + holeRadius) {
                     nextHole(); // Ball has fallen into the hole
                 }
@@ -287,3 +287,4 @@
 
 </body>
 </html>
+
