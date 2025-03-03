@@ -57,6 +57,7 @@
             background: black;
             border-radius: 10px;
             cursor: grab;
+            bottom: 0; /* Start at the bottom */
         }
     </style>
 </head>
@@ -109,7 +110,7 @@
     function drawBall() {
         ctx.beginPath();
         ctx.arc(ballX, ballY, ballRadius, 0, Math.PI * 2);
-        ctx.fillStyle = "#FFD700";
+        ctx.fillStyle = "#FFFFFF";  // Ball is now white
         ctx.fill();
         ctx.closePath();
     }
@@ -141,9 +142,9 @@
 
     function updateGame() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        drawBall();
-        drawHole();
-        drawPowerPreview();
+        drawPowerPreview(); // Draw the power preview line behind the ball
+        drawBall();         // Draw the ball on top of the line
+        drawHole();         // Draw the hole
     }
 
     function moveBall() {
@@ -201,6 +202,7 @@
         if (!isDragging) return;
         isDragging = false;
         shootBall();
+        resetPowerBarButton();
     }
 
     function shootBall() {
@@ -210,6 +212,11 @@
         moving = true;
         strokes++;
         document.getElementById('strokes').textContent = strokes;
+    }
+
+    function resetPowerBarButton() {
+        powerSwitch.style.transform = "translateY(0px)"; // Reset button to the bottom
+        powerLevel = 0; // Reset the power level
     }
 
     function gameLoop() {
