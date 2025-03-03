@@ -178,17 +178,9 @@
 
             // Ball should not get behind the hole visually, ensure it's drawn above the hole
             if (distanceToHole < holeRadius + ballRadius) {
-                // Ball can fall into the hole only if it is moving slowly enough
-                if (Math.abs(ballSpeedX) < 1.5 && Math.abs(ballSpeedY) < 1.5) {
-                    // Lower the ball further down towards the bottom of the hole, simulating gravity
-                    if (ballY < holeY + holeRadius + 5) {  // Allow ball to drop lower into the hole
-                        ballSpeedY += 0.1;  // Gradual fall towards the hole's bottom
-                    }
-                } else {
-                    // Ball is moving too fast, pass over the hole
-                    if (ballY > holeY) {
-                        ballSpeedX *= 1.1;  // Make ball bounce off with an increased speed to simulate it going over the hole
-                    }
+                // Lower the ball further down towards the bottom of the hole, simulating gravity
+                if (ballY < holeY + holeRadius + 5) {  // Allow ball to drop lower into the hole
+                    ballSpeedY += 0.1;  // Gradual fall towards the hole's bottom
                 }
 
                 // Ball bounces off the back edge if hit too hard
@@ -270,8 +262,8 @@
         if (isDragging) {
             isDragging = false;
             moving = true;
-            ballSpeedX = Math.cos(0) * powerLevel * 0.7;  // Reduced power scale for slower ball movement
-            ballSpeedY = Math.sin(0) * powerLevel * 0.7;
+            ballSpeedX = Math.cos(0) * powerLevel * 2;
+            ballSpeedY = Math.sin(0) * powerLevel * 2;
         }
     }
 
