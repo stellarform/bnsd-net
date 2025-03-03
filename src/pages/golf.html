@@ -102,7 +102,7 @@
         ballX = 50;
         ballY = canvas.height / 2 - ballRadius; // Ball's bottom should align with the top edge of the green rectangle
         holeX = canvas.width - Math.random() * 200 - 50;
-        holeY = canvas.height / 2; // Hole is positioned so the flat edge aligns with the top of the green
+        holeY = canvas.height / 2; // Hole sits on the surface of the green
         strokes = 0;
         document.getElementById('strokes').textContent = strokes;
         document.getElementById('hole-number').textContent = holeNumber;
@@ -117,26 +117,36 @@
     }
 
     function drawHole() {
-        const holeWidth = 30;  // Width of the rounded rectangle
-        const holeHeight = 20; // Height of the half-rounded rectangle (cut in half)
-
         ctx.beginPath();
-        // Draw a rounded rectangle (cut in half horizontally)
-        ctx.moveTo(holeX - holeWidth / 2, holeY - holeHeight); // Start point at the top edge of the hole
-        ctx.arcTo(holeX + holeWidth / 2, holeY - holeHeight, holeX + holeWidth / 2, holeY, 10);  // Top right corner
-        ctx.arcTo(holeX + holeWidth / 2, holeY, holeX - holeWidth / 2, holeY, 10);  // Bottom right corner
-        ctx.arcTo(holeX - holeWidth / 2, holeY, holeX - holeWidth / 2, holeY - holeHeight, 10);  // Bottom left corner
-        ctx.arcTo(holeX - holeWidth / 2, holeY - holeHeight, holeX + holeWidth / 2, holeY - holeHeight, 10); // Top left corner
-        ctx.fillStyle = "#87CEEB"; // Powder blue to match the background
+        // Draw the hole as a full circle, but we'll "cut" the top part where the blue overlaps.
+        ctx.arc(holeX, holeY, 10, 0, Math.PI); // Draw a semi-circle, now flipped with the flat part on top
+        ctx.fillStyle = "#87CEEB"; // Light blue color for the hole
         ctx.fill();
         ctx.closePath();
+    }
+
+    function drawPowerPreview() {
+        if (!moving) {
+            // Create a gradient for the power preview line (cone shape)
+            let gradient = ctx.createLinearGradient(ballX, ballY, ballX + (powerLevel * 15), ballY);
+            gradient.addColorStop(0, 'green');
+            gradient.addColorStop(1, 'red');
+            
+            ctx.beginPath();
+            ctx.moveTo(ballX, ballY);
+            ctx.lineTo(ballX + (powerLevel * 15), ballY);  // Preview line direction
+            ctx.strokeStyle = gradient;
+            ctx.lineWidth = 4;
+            ctx.stroke();
+            ctx.closePath();
+        }
     }
 
     function updateGame() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         drawPowerPreview(); // Draw the power preview line behind the ball
         drawBall();         // Draw the ball on top of the line
-        drawHole();         // Draw the hole with the blue color
+        drawHole();         // Draw the hole
     }
 
     function moveBall() {
@@ -153,13 +163,12 @@
             }
 
             // Collision check with the hole
-            let holeRadius = 15; // Hole radius for the half-circle
+            let holeRadius = 10;
             let distanceToHole = Math.sqrt(Math.pow(ballX - holeX, 2) + Math.pow(ballY - holeY, 2));
 
-            // Check if the ball has fallen into the hole (it must be inside the hole, and the bottom of the ball hits the bottom of the half-circle)
+            // Check if the ball has fallen into the hole (it must be inside the hole, not just touching)
             if (distanceToHole < holeRadius + ballRadius) {
-                // Ball should touch the bottom of the hole (holeY is the bottom edge of the half-circle)
-                if (ballY + ballRadius >= holeY - holeRadius) {
+                if (ballY >= holeY + holeRadius) {
                     nextHole();  // Ball has dropped into the hole
                 }
             }
@@ -181,7 +190,7 @@
 
         // Generate a new hole position
         holeX = canvas.width - Math.random() * 200 - 50;
-        holeY = canvas.height / 2; // Generate new hole position above the green
+        holeY = canvas.height / 2; // Generate new hole position on the surface of the green
     }
 
     function handlePowerStart(event) {
@@ -203,7 +212,7 @@
         powerLevel = Math.round((x / rect.width) * maxPower);
 
         // Move the switch button within bounds
-        powerSwitch.style.transform = `translateX(${x}px)`;
+        powerSwitch.style.transform = translateX(${x}px);
     }
 
     function handlePowerEnd(event) {
