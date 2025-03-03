@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Golf Putting Game (Power Bar Swipe)</title>
+    <title>Golf Putting Game</title>
     <style>
         body {
             margin: 0;
@@ -128,8 +128,11 @@
             ctx.strokeStyle = "rgba(255, 0, 0, 0.7)";
             ctx.lineWidth = 2;
             ctx.moveTo(ballX, ballY);
-            
-            let previewLength = powerLevel * 15;
+
+            // Calculate max preview length as 35% of screen width
+            let maxPreviewLength = canvas.width * 0.35;
+            let previewLength = Math.min(powerLevel * 15, maxPreviewLength);
+
             ctx.lineTo(ballX + previewLength, ballY);
             ctx.stroke();
             ctx.closePath();
@@ -168,8 +171,14 @@
         document.getElementById('hole-number').textContent = holeNumber;
         document.getElementById('strokes').textContent = strokes;
 
+        // Immediately reset the ball position
         ballX = 50;
         ballY = canvas.height / 2 + 20;
+        moving = false;
+        ballSpeedX = 0;
+        ballSpeedY = 0;
+
+        // Generate a new hole position
         holeX = canvas.width - Math.random() * 200 - 50;
         holeY = canvas.height / 2 + 20;
     }
@@ -180,7 +189,7 @@
 
     function handlePowerMove(event) {
         if (!isDragging) return;
-        let touch = event.touches[0] || event;
+        let touch = event.touches ? event.touches[0] : event;
         let rect = powerBarContainer.getBoundingClientRect();
         let y = Math.min(Math.max(touch.clientY - rect.top, 0), rect.height);
         powerLevel = Math.round((rect.height - y) / rect.height * maxPower);
@@ -208,14 +217,16 @@
         requestAnimationFrame(gameLoop);
     }
 
+    // Add event listeners for both mobile (touch) and desktop (mouse)
     window.addEventListener('resize', resizeCanvas);
-    powerSwitch.addEventListener('touchstart', handlePowerStart);
-    powerSwitch.addEventListener('touchmove', handlePowerMove);
-    powerSwitch.addEventListener('touchend', handlePowerEnd);
-    powerSwitch.addEventListener('mousedown', handlePowerStart);
-    powerSwitch.addEventListener('mousemove', handlePowerMove);
-    powerSwitch.addEventListener('mouseup', handlePowerEnd);
-    powerSwitch.addEventListener('mouseleave', handlePowerEnd);
+    
+    const events = ['touchstart', 'mousedown'];
+    const moveEvents = ['touchmove', 'mousemove'];
+    const endEvents = ['touchend', 'mouseup', 'mouseleave'];
+
+    events.forEach(event => powerSwitch.addEventListener(event, handlePowerStart));
+    moveEvents.forEach(event => powerSwitch.addEventListener(event, handlePowerMove));
+    endEvents.forEach(event => powerSwitch.addEventListener(event, handlePowerEnd));
 
     resizeCanvas();
     gameLoop();
