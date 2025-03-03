@@ -46,7 +46,7 @@
         .power-bar {
             width: 100%;
             height: 100%;
-            background: linear-gradient(to top, red, yellow, green);
+            background: linear-gradient(to bottom, green, yellow, red); /* Reverse the color gradient */
             position: absolute;
             bottom: 0;
         }
@@ -195,7 +195,7 @@
         let rect = powerBarContainer.getBoundingClientRect();
         let y = Math.min(Math.max(clientY - rect.top, 0), rect.height);
         powerLevel = Math.round((rect.height - y) / rect.height * maxPower);
-        powerSwitch.style.transform = `translateY(${y - 10}px)`;
+        powerSwitch.style.transform = `translateY(${y - 10}px)`;  // Update button position
     }
 
     function handlePowerEnd(event) {
