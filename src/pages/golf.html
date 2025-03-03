@@ -34,30 +34,32 @@
             position: absolute;
             bottom: 50px;
             right: 30px;
-            width: 40px;
-            height: 200px;
+            width: 60px;
+            height: 250px;
             background: #ccc;
-            border-radius: 20px;
-            overflow: hidden;
+            border-radius: 30px;
             display: flex;
             align-items: center;
             justify-content: center;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
         }
         .power-bar {
             width: 100%;
             height: 100%;
-            background: linear-gradient(to bottom, green, yellow, red); /* Reverse the color gradient */
+            background: linear-gradient(to top, green, yellow, red); /* Color gradient reversed */
             position: absolute;
             bottom: 0;
+            border-radius: 30px;
         }
         .power-switch {
             position: absolute;
             width: 50px;
-            height: 20px;
+            height: 30px;
             background: black;
-            border-radius: 10px;
+            border-radius: 15px;
             cursor: grab;
             bottom: 0; /* Start at the bottom */
+            transition: transform 0.1s ease-out; /* Smooth transition for switch release */
         }
     </style>
 </head>
@@ -195,7 +197,7 @@
         let rect = powerBarContainer.getBoundingClientRect();
         let y = Math.min(Math.max(clientY - rect.top, 0), rect.height);
         powerLevel = Math.round((rect.height - y) / rect.height * maxPower);
-        powerSwitch.style.transform = `translateY(${y - 10}px)`;  // Update button position
+        powerSwitch.style.transform = `translateY(${y - 15}px)`;  // Update button position, with 15px offset for centering
     }
 
     function handlePowerEnd(event) {
