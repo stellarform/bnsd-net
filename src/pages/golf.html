@@ -193,11 +193,19 @@
 
     function handlePowerMove(event) {
         if (!isDragging) return;
+
+        // Get the mouse/touch position
         let clientY = event.touches ? event.touches[0].clientY : event.clientY;
         let rect = powerBarContainer.getBoundingClientRect();
+        
+        // Constrain the switch movement from bottom to top (never goes below 0 or above the container height)
         let y = Math.min(Math.max(clientY - rect.top, 0), rect.height);
+
+        // Calculate power level based on position
         powerLevel = Math.round((rect.height - y) / rect.height * maxPower);
-        powerSwitch.style.transform = `translateY(${y - 15}px)`;  // Update button position, with 15px offset for centering
+
+        // Move the switch button within bounds
+        powerSwitch.style.transform = `translateY(${y - 15}px)`;  // 15px offset for centering
     }
 
     function handlePowerEnd(event) {
