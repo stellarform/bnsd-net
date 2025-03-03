@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Golf Putting Game</title>
+    <title>Golf Putting Game (Touch Controls)</title>
     <style>
         body {
             margin: 0;
@@ -11,9 +11,11 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            touch-action: none; /* Prevent scrolling on touch */
         }
         canvas {
             display: block;
+            background: linear-gradient(to bottom, #87CEEB 50%, #228B22 50%);
         }
         .scoreboard {
             position: absolute;
@@ -35,7 +37,6 @@
 <div class="scoreboard">
     <p>Hole: <span id="hole-number">1</span></p>
     <p>Strokes: <span id="strokes">0</span></p>
-    <p>Power: <span id="power">0</span></p>
 </div>
 
 <canvas id="gameCanvas"></canvas>
@@ -44,13 +45,14 @@
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
 
-    let ballX, ballY, ballRadius = 5;
+    let ballX, ballY, ballRadius = 8;
     let holeX, holeY;
     let strokes = 0, holeNumber = 1;
-    let power = 0;
-    let charging = false;
+    let power = 0, powerMax = 100;
     let moving = false;
-    let ballSpeed = 0;
+    let ballSpeedX = 0, ballSpeedY = 0;
+    let touchStartX, touchStartY;
+    let dragging = false;
 
     function resizeCanvas() {
         canvas.width = window.innerWidth;
@@ -60,22 +62,12 @@
 
     function initializeGame() {
         ballX = 50;
-        ballY = canvas.height / 2 + 20; // Fixed Y-position on the green
-        holeX = canvas.width - 100;
-        holeY = canvas.height / 2 + 20; // Hole on the same surface
+        ballY = canvas.height / 2 + 20; // Start on green
+        holeX = canvas.width - Math.random() * 200 - 50;
+        holeY = canvas.height / 2 + 20; // Hole on green level
         strokes = 0;
         document.getElementById('strokes').textContent = strokes;
         document.getElementById('hole-number').textContent = holeNumber;
-    }
-
-    function drawBackground() {
-        // Draw Sky (top half)
-        ctx.fillStyle = "#87CEEB";
-        ctx.fillRect(0, 0, canvas.width, canvas.height / 2);
-
-        // Draw Grass (bottom half)
-        ctx.fillStyle = "#228B22";
-        ctx.fillRect(0, canvas.height / 2, canvas.width, canvas.height / 2);
     }
 
     function drawBall() {
@@ -88,61 +80,51 @@
 
     function drawHole() {
         ctx.beginPath();
-        ctx.arc(holeX, holeY, 8, 0, Math.PI * 2);
+        ctx.arc(holeX, holeY, 10, 0, Math.PI * 2);
         ctx.fillStyle = "#000000"; // Black hole
         ctx.fill();
         ctx.closePath();
     }
 
-    function drawPowerMeter() {
-        ctx.fillStyle = "black";
-        ctx.fillRect(50, canvas.height - 50, 100, 10); // Meter background
-
-        ctx.fillStyle = "red";
-        ctx.fillRect(50, canvas.height - 50, power, 10); // Power fill
-    }
-
-    function drawPowerPreview() {
-        if (!moving) {
+    function drawPowerPreview(touchX, touchY) {
+        if (dragging && !moving) {
             ctx.beginPath();
-            ctx.strokeStyle = "rgba(255, 0, 0, 0.5)";
+            ctx.strokeStyle = "rgba(255, 0, 0, 0.7)";
             ctx.lineWidth = 2;
             ctx.moveTo(ballX, ballY);
-            ctx.lineTo(ballX + power * 3, ballY);
+            
+            let dx = touchX - ballX;
+            let dy = touchY - ballY;
+            let distance = Math.sqrt(dx * dx + dy * dy);
+            let previewLength = Math.min(distance, powerMax) * 1.5;
+
+            ctx.lineTo(ballX - (dx / distance) * previewLength, ballY - (dy / distance) * previewLength);
             ctx.stroke();
             ctx.closePath();
         }
     }
 
     function updateGame() {
-        drawBackground();
-        drawHole();
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
         drawBall();
-        drawPowerMeter();
-        drawPowerPreview();
-    }
-
-    function hitBall() {
-        if (!moving) {
-            strokes++;
-            moving = true;
-            ballSpeed = power / 10; // Translate power into speed
-            power = 0;
-            document.getElementById('strokes').textContent = strokes;
-        }
+        drawHole();
     }
 
     function moveBall() {
         if (moving) {
-            ballX += ballSpeed;
-            ballSpeed *= 0.98; // Friction slows ball down
+            ballX += ballSpeedX;
+            ballY += ballSpeedY;
+            ballSpeedX *= 0.98; // Friction
+            ballSpeedY *= 0.98;
 
-            if (ballSpeed < 0.1) {
-                ballSpeed = 0;
+            if (Math.abs(ballSpeedX) < 0.1 && Math.abs(ballSpeedY) < 0.1) {
+                ballSpeedX = 0;
+                ballSpeedY = 0;
                 moving = false;
             }
 
-            if (Math.abs(ballX - holeX) < 8 && Math.abs(ballY - holeY) < 8) {
+            // Check if ball is in hole
+            if (Math.abs(ballX - holeX) < 10 && Math.abs(ballY - holeY) < 10) {
                 nextHole();
             }
         }
@@ -156,34 +138,53 @@
 
         ballX = 50;
         ballY = canvas.height / 2 + 20; // Reset ball
-        holeX = canvas.width - Math.random() * 100 - 50; // Random hole position
+        holeX = canvas.width - Math.random() * 200 - 50; // Random hole position
         holeY = canvas.height / 2 + 20; // Keep hole on surface
     }
 
+    function handleTouchStart(event) {
+        if (moving) return;
+        let touch = event.touches[0];
+        touchStartX = touch.clientX;
+        touchStartY = touch.clientY;
+        dragging = true;
+    }
+
+    function handleTouchMove(event) {
+        if (!dragging || moving) return;
+        let touch = event.touches[0];
+        updateGame();
+        drawPowerPreview(touch.clientX, touch.clientY);
+    }
+
+    function handleTouchEnd(event) {
+        if (!dragging || moving) return;
+        let touch = event.changedTouches[0];
+        let dx = touch.clientX - touchStartX;
+        let dy = touch.clientY - touchStartY;
+        let distance = Math.sqrt(dx * dx + dy * dy);
+        let maxDistance = 150;
+        
+        let powerFactor = Math.min(distance / maxDistance, 1);
+        ballSpeedX = -(dx / distance) * (powerFactor * 10);
+        ballSpeedY = -(dy / distance) * (powerFactor * 10);
+        
+        dragging = false;
+        moving = true;
+        strokes++;
+        document.getElementById('strokes').textContent = strokes;
+    }
+
     function gameLoop() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
         updateGame();
         moveBall();
         requestAnimationFrame(gameLoop);
     }
 
     window.addEventListener('resize', resizeCanvas);
-    window.addEventListener('keydown', (event) => {
-        if (event.key.toLowerCase() === "p") {
-            charging = !charging;
-        }
-        if (event.key.toLowerCase() === "s") {
-            hitBall();
-            charging = false; // Reset power meter
-        }
-    });
-
-    setInterval(() => {
-        if (charging && power < 100) {
-            power += 2;
-            document.getElementById('power').textContent = power;
-        }
-    }, 30);
+    canvas.addEventListener('touchstart', handleTouchStart);
+    canvas.addEventListener('touchmove', handleTouchMove);
+    canvas.addEventListener('touchend', handleTouchEnd);
 
     resizeCanvas();
     gameLoop();
