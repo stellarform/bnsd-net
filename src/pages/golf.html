@@ -132,28 +132,11 @@
         ctx.closePath();
     }
 
-    function drawPowerPreview() {
-        if (!moving) {
-            // Create a gradient for the power preview line (cone shape)
-            let gradient = ctx.createLinearGradient(ballX, ballY, ballX + (powerLevel * 15), ballY);
-            gradient.addColorStop(0, 'green');
-            gradient.addColorStop(1, 'red');
-            
-            ctx.beginPath();
-            ctx.moveTo(ballX, ballY);
-            ctx.lineTo(ballX + (powerLevel * 15), ballY);  // Preview line direction
-            ctx.strokeStyle = gradient;
-            ctx.lineWidth = 4;
-            ctx.stroke();
-            ctx.closePath();
-        }
-    }
-
     function updateGame() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         drawPowerPreview(); // Draw the power preview line behind the ball
         drawBall();         // Draw the ball on top of the line
-        drawHole();         // Draw the hole
+        drawHole();         // Draw the hole with the blue color
     }
 
     function moveBall() {
