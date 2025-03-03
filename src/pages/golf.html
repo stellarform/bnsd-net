@@ -194,8 +194,8 @@
 
                 // Only proceed to the next hole if the ball is at the lowest point of the hole (bottom of the arc)
                 if (ballY >= holeY + holeRadius) {
-                    // Do not count strokes when the ball is in the hole
                     moving = false;
+                    nextHole(); // Move to next hole automatically when the ball is in the hole
                 }
             }
             
@@ -273,7 +273,9 @@
         ballSpeedY = 0;
         moving = true;
         strokes++;
+        totalStrokes++; // Update total strokes immediately after a shot
         document.getElementById('strokes').textContent = strokes;
+        document.getElementById('total-strokes').textContent = totalStrokes; // Update total strokes
     }
 
     function resetPowerBarButton() {
