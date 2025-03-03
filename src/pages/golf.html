@@ -53,10 +53,10 @@
         }
         .power-switch {
             position: absolute;
-            width: 50px;
-            height: 30px;
-            background: black;
-            border-radius: 15px;
+            width: 40px;
+            height: 40px;
+            background: silver;
+            border-radius: 50%;
             cursor: grab;
             bottom: 0; /* Start at the bottom */
             transition: transform 0.1s ease-out; /* Smooth transition for switch release */
@@ -205,7 +205,7 @@
         powerLevel = Math.round((rect.height - y) / rect.height * maxPower);
 
         // Move the switch button within bounds
-        powerSwitch.style.transform = `translateY(${y - 15}px)`;  // 15px offset for centering
+        powerSwitch.style.transform = `translateY(${y - 20}px)`;  // 20px offset for centering the switch
     }
 
     function handlePowerEnd(event) {
