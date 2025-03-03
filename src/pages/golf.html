@@ -117,12 +117,22 @@
     }
 
     function drawHole() {
+        ctx.save();
+        // Clip the hole into the green section, using the path below to simulate a cutout
         ctx.beginPath();
-        // Draw the hole as a full circle, but we'll "cut" the top part where the blue overlaps.
-        ctx.arc(holeX, holeY, 10, 0, Math.PI); // Draw a semi-circle, now flipped with the flat part on top
-        ctx.fillStyle = "#000000"; // Hole color
+        ctx.arc(holeX, holeY, 10, 0, Math.PI * 2);
+        ctx.fillStyle = "#228B22"; // The green color (grass)
+        ctx.fill();
+        ctx.clip();
+
+        // Now draw the hole as a "cutout" into the green by drawing a background of blue
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.beginPath();
+        ctx.arc(holeX, holeY, 10, 0, Math.PI * 2);
+        ctx.fillStyle = "#000000"; // Hole color (black)
         ctx.fill();
         ctx.closePath();
+        ctx.restore();
     }
 
     function drawPowerPreview() {
