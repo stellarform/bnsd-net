@@ -252,7 +252,7 @@
     }
 
     function shootBall() {
-        if (moving) return;
+        if (moving) return;  // Allow a new shot only after the ball stops
         ballSpeedX = powerLevel * 5;  // Increased multiplier for more noticeable speed
         ballSpeedY = 0;
         moving = true;
