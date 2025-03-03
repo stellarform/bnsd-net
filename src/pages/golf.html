@@ -117,15 +117,20 @@
     }
 
     function drawHole() {
+        ctx.save();
+        // Draw a full circle hole
         ctx.beginPath();
-        // Draw the top flat part of the hole on the green surface
-        ctx.rect(holeX - 10, holeY - 10, 20, 10); // Flat top, part of hole inside the green
-
-        // Draw the half-circle under the flat part (open side facing downwards)
-        ctx.arc(holeX, holeY + 10, 10, Math.PI, 2 * Math.PI); // Half circle starting at the green surface and extending downward
+        ctx.arc(holeX, holeY, 10, 0, Math.PI * 2); // Full circle hole
         ctx.fillStyle = "#000000";
         ctx.fill();
         ctx.closePath();
+
+        // Now mask the top half
+        ctx.beginPath();
+        ctx.arc(holeX, holeY, 10, Math.PI, 0); // Bottom half of the circle (cut the top)
+        ctx.fillStyle = "#87CEEB"; // Match the sky color to mask the top half
+        ctx.fill();
+        ctx.restore();
     }
 
     function drawPowerPreview() {
