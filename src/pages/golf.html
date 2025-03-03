@@ -118,17 +118,17 @@
 
     function drawHole() {
         ctx.save();
-        // Draw a full circle hole
+        // Define a custom SVG path for the hole with a sharper edge and flatter bottom
         ctx.beginPath();
-        ctx.arc(holeX, holeY, 10, 0, Math.PI * 2); // Full circle hole
-        ctx.fillStyle = "#000000";
-        ctx.fill();
+        // Path data to create the hole shape (flat bottom, half circle above)
+        ctx.moveTo(holeX - 10, holeY); // Start at the left edge of the hole
+        ctx.lineTo(holeX + 10, holeY); // Move to the right edge of the hole
+        ctx.arcTo(holeX + 10, holeY - 10, holeX - 10, holeY - 10, 10); // Arc to the top to create half-circle top
+        ctx.lineTo(holeX - 10, holeY - 10); // Go back left
+        ctx.arcTo(holeX - 10, holeY + 10, holeX + 10, holeY + 10, 10); // Bottom flat part
         ctx.closePath();
 
-        // Now mask the top half
-        ctx.beginPath();
-        ctx.arc(holeX, holeY, 10, Math.PI, 0); // Bottom half of the circle (cut the top)
-        ctx.fillStyle = "#87CEEB"; // Match the sky color to mask the top half
+        ctx.fillStyle = "#000000"; // Hole color
         ctx.fill();
         ctx.restore();
     }
