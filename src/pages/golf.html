@@ -102,7 +102,7 @@
         ballX = 50;
         ballY = canvas.height / 2 - ballRadius; // Ball's bottom should align with the top edge of the green rectangle
         holeX = canvas.width - Math.random() * 200 - 50;
-        holeY = canvas.height / 2; // Hole sits on the surface of the green
+        holeY = canvas.height / 2; // Hole is positioned so the flat edge aligns with the top of the green
         strokes = 0;
         document.getElementById('strokes').textContent = strokes;
         document.getElementById('hole-number').textContent = holeNumber;
@@ -117,9 +117,16 @@
     }
 
     function drawHole() {
+        const holeWidth = 30;  // Width of the rounded rectangle
+        const holeHeight = 20; // Height of the half-rounded rectangle (cut in half)
+
         ctx.beginPath();
-        // Draw the hole as a half circle (top half of a full circle)
-        ctx.arc(holeX, holeY, 15, Math.PI, 0); // Half circle
+        // Draw a rounded rectangle (cut in half horizontally)
+        ctx.moveTo(holeX - holeWidth / 2, holeY - holeHeight); // Start point at the top edge of the hole
+        ctx.arcTo(holeX + holeWidth / 2, holeY - holeHeight, holeX + holeWidth / 2, holeY, 10);  // Top right corner
+        ctx.arcTo(holeX + holeWidth / 2, holeY, holeX - holeWidth / 2, holeY, 10);  // Bottom right corner
+        ctx.arcTo(holeX - holeWidth / 2, holeY, holeX - holeWidth / 2, holeY - holeHeight, 10);  // Bottom left corner
+        ctx.arcTo(holeX - holeWidth / 2, holeY - holeHeight, holeX + holeWidth / 2, holeY - holeHeight, 10); // Top left corner
         ctx.fillStyle = "#87CEEB"; // Powder blue to match the background
         ctx.fill();
         ctx.closePath();
@@ -191,7 +198,7 @@
 
         // Generate a new hole position
         holeX = canvas.width - Math.random() * 200 - 50;
-        holeY = canvas.height / 2; // Generate new hole position on the surface of the green
+        holeY = canvas.height / 2; // Generate new hole position above the green
     }
 
     function handlePowerStart(event) {
