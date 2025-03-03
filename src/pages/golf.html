@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Golf Putting Game (Touch Controls)</title>
+    <title>Golf Putting Game (Power Bar Swipe)</title>
     <style>
         body {
             margin: 0;
@@ -11,7 +11,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            touch-action: none; /* Prevent scrolling on touch */
+            touch-action: none;
         }
         canvas {
             display: block;
@@ -30,6 +30,34 @@
         .scoreboard p {
             margin: 5px 0;
         }
+        .power-bar-container {
+            position: absolute;
+            bottom: 50px;
+            right: 30px;
+            width: 40px;
+            height: 200px;
+            background: #ccc;
+            border-radius: 20px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .power-bar {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to top, red, yellow, green);
+            position: absolute;
+            bottom: 0;
+        }
+        .power-switch {
+            position: absolute;
+            width: 50px;
+            height: 20px;
+            background: black;
+            border-radius: 10px;
+            cursor: grab;
+        }
     </style>
 </head>
 <body>
@@ -41,18 +69,26 @@
 
 <canvas id="gameCanvas"></canvas>
 
+<div class="power-bar-container">
+    <div class="power-bar"></div>
+    <div class="power-switch"></div>
+</div>
+
 <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
 
+    const powerBarContainer = document.querySelector('.power-bar-container');
+    const powerSwitch = document.querySelector('.power-switch');
+    let powerLevel = 0;
+    let maxPower = 10;
+    let isDragging = false;
+
     let ballX, ballY, ballRadius = 8;
     let holeX, holeY;
     let strokes = 0, holeNumber = 1;
-    let power = 0, powerMax = 100;
     let moving = false;
     let ballSpeedX = 0, ballSpeedY = 0;
-    let touchStartX, touchStartY;
-    let dragging = false;
 
     function resizeCanvas() {
         canvas.width = window.innerWidth;
@@ -62,9 +98,9 @@
 
     function initializeGame() {
         ballX = 50;
-        ballY = canvas.height / 2 + 20; // Start on green
+        ballY = canvas.height / 2 + 20;
         holeX = canvas.width - Math.random() * 200 - 50;
-        holeY = canvas.height / 2 + 20; // Hole on green level
+        holeY = canvas.height / 2 + 20;
         strokes = 0;
         document.getElementById('strokes').textContent = strokes;
         document.getElementById('hole-number').textContent = holeNumber;
@@ -73,7 +109,7 @@
     function drawBall() {
         ctx.beginPath();
         ctx.arc(ballX, ballY, ballRadius, 0, Math.PI * 2);
-        ctx.fillStyle = "#FFD700"; // Gold ball
+        ctx.fillStyle = "#FFD700";
         ctx.fill();
         ctx.closePath();
     }
@@ -81,24 +117,20 @@
     function drawHole() {
         ctx.beginPath();
         ctx.arc(holeX, holeY, 10, 0, Math.PI * 2);
-        ctx.fillStyle = "#000000"; // Black hole
+        ctx.fillStyle = "#000000";
         ctx.fill();
         ctx.closePath();
     }
 
-    function drawPowerPreview(touchX, touchY) {
-        if (dragging && !moving) {
+    function drawPowerPreview() {
+        if (!moving) {
             ctx.beginPath();
             ctx.strokeStyle = "rgba(255, 0, 0, 0.7)";
             ctx.lineWidth = 2;
             ctx.moveTo(ballX, ballY);
             
-            let dx = touchX - ballX;
-            let dy = touchY - ballY;
-            let distance = Math.sqrt(dx * dx + dy * dy);
-            let previewLength = Math.min(distance, powerMax) * 1.5;
-
-            ctx.lineTo(ballX - (dx / distance) * previewLength, ballY - (dy / distance) * previewLength);
+            let previewLength = powerLevel * 15;
+            ctx.lineTo(ballX + previewLength, ballY);
             ctx.stroke();
             ctx.closePath();
         }
@@ -108,13 +140,14 @@
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         drawBall();
         drawHole();
+        drawPowerPreview();
     }
 
     function moveBall() {
         if (moving) {
             ballX += ballSpeedX;
             ballY += ballSpeedY;
-            ballSpeedX *= 0.98; // Friction
+            ballSpeedX *= 0.98;
             ballSpeedY *= 0.98;
 
             if (Math.abs(ballSpeedX) < 0.1 && Math.abs(ballSpeedY) < 0.1) {
@@ -123,7 +156,6 @@
                 moving = false;
             }
 
-            // Check if ball is in hole
             if (Math.abs(ballX - holeX) < 10 && Math.abs(ballY - holeY) < 10) {
                 nextHole();
             }
@@ -137,39 +169,34 @@
         document.getElementById('strokes').textContent = strokes;
 
         ballX = 50;
-        ballY = canvas.height / 2 + 20; // Reset ball
-        holeX = canvas.width - Math.random() * 200 - 50; // Random hole position
-        holeY = canvas.height / 2 + 20; // Keep hole on surface
+        ballY = canvas.height / 2 + 20;
+        holeX = canvas.width - Math.random() * 200 - 50;
+        holeY = canvas.height / 2 + 20;
     }
 
-    function handleTouchStart(event) {
+    function handlePowerStart(event) {
+        isDragging = true;
+    }
+
+    function handlePowerMove(event) {
+        if (!isDragging) return;
+        let touch = event.touches[0] || event;
+        let rect = powerBarContainer.getBoundingClientRect();
+        let y = Math.min(Math.max(touch.clientY - rect.top, 0), rect.height);
+        powerLevel = Math.round((rect.height - y) / rect.height * maxPower);
+        powerSwitch.style.transform = `translateY(${y - 10}px)`;
+    }
+
+    function handlePowerEnd() {
+        if (!isDragging) return;
+        isDragging = false;
+        shootBall();
+    }
+
+    function shootBall() {
         if (moving) return;
-        let touch = event.touches[0];
-        touchStartX = touch.clientX;
-        touchStartY = touch.clientY;
-        dragging = true;
-    }
-
-    function handleTouchMove(event) {
-        if (!dragging || moving) return;
-        let touch = event.touches[0];
-        updateGame();
-        drawPowerPreview(touch.clientX, touch.clientY);
-    }
-
-    function handleTouchEnd(event) {
-        if (!dragging || moving) return;
-        let touch = event.changedTouches[0];
-        let dx = touch.clientX - touchStartX;
-        let dy = touch.clientY - touchStartY;
-        let distance = Math.sqrt(dx * dx + dy * dy);
-        let maxDistance = 150;
-        
-        let powerFactor = Math.min(distance / maxDistance, 1);
-        ballSpeedX = -(dx / distance) * (powerFactor * 10);
-        ballSpeedY = -(dy / distance) * (powerFactor * 10);
-        
-        dragging = false;
+        ballSpeedX = powerLevel;
+        ballSpeedY = 0;
         moving = true;
         strokes++;
         document.getElementById('strokes').textContent = strokes;
@@ -182,9 +209,13 @@
     }
 
     window.addEventListener('resize', resizeCanvas);
-    canvas.addEventListener('touchstart', handleTouchStart);
-    canvas.addEventListener('touchmove', handleTouchMove);
-    canvas.addEventListener('touchend', handleTouchEnd);
+    powerSwitch.addEventListener('touchstart', handlePowerStart);
+    powerSwitch.addEventListener('touchmove', handlePowerMove);
+    powerSwitch.addEventListener('touchend', handlePowerEnd);
+    powerSwitch.addEventListener('mousedown', handlePowerStart);
+    powerSwitch.addEventListener('mousemove', handlePowerMove);
+    powerSwitch.addEventListener('mouseup', handlePowerEnd);
+    powerSwitch.addEventListener('mouseleave', handlePowerEnd);
 
     resizeCanvas();
     gameLoop();
