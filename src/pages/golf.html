@@ -98,7 +98,7 @@
     const powerBarContainer = document.querySelector('.power-bar-container');
     const powerSwitch = document.querySelector('.power-switch');
     let powerLevel = 0;
-    let maxPower = 10;
+    let maxPower = 8; // Lowered the maximum power to 8
     let isDragging = false;
 
     let ballX, ballY, ballRadius = 8;
@@ -169,8 +169,8 @@
         if (moving) {
             ballX += ballSpeedX;
             ballY += ballSpeedY;
-            ballSpeedX *= 0.98;
-            ballSpeedY *= 0.98;
+            ballSpeedX *= 0.85; // Reduced by 15% (slower speed)
+            ballSpeedY *= 0.85; // Reduced by 15% (slower speed)
 
             // Gravity effect when the ball is over the hole
             const holeRadius = 13.3;  // Updated hole radius after increase
@@ -221,6 +221,8 @@
         // Generate a new hole position
         holeX = canvas.width - Math.random() * 200 - 50;
         holeY = canvas.height / 2; // Generate new hole position on the surface of the green
+
+        resetPowerBar(); // Reset the power bar after the shot
     }
 
     function nextHole() {
@@ -239,6 +241,8 @@
         // Generate a new hole position
         holeX = canvas.width - Math.random() * 200 - 50;
         holeY = canvas.height / 2; // Generate new hole position on the surface of the green
+
+        resetPowerBar(); // Reset the power bar after the hole
     }
 
     function adjustPower(e) {
@@ -267,6 +271,11 @@
         }
     }
 
+    function resetPowerBar() {
+        powerLevel = 0;
+        powerSwitch.style.transform = `translateX(0px)`;
+    }
+
     powerBarContainer.addEventListener('mousedown', startDrag);
     document.addEventListener('mousemove', adjustPower);
     document.addEventListener('mouseup', stopDrag);
@@ -285,3 +294,4 @@
 
 </body>
 </html>
+
