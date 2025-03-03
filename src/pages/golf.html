@@ -197,7 +197,7 @@
         // Get the mouse/touch position
         let clientY = event.touches ? event.touches[0].clientY : event.clientY;
         let rect = powerBarContainer.getBoundingClientRect();
-        
+
         // Constrain the switch movement from bottom to top (never goes below 0 or above the container height)
         let y = Math.min(Math.max(clientY - rect.top, 0), rect.height);
 
@@ -236,7 +236,7 @@
     }
 
     window.addEventListener('resize', resizeCanvas);
-    
+
     powerSwitch.addEventListener('touchstart', handlePowerStart);
     powerSwitch.addEventListener('touchmove', handlePowerMove);
     powerSwitch.addEventListener('touchend', handlePowerEnd);
