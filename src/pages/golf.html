@@ -114,6 +114,7 @@
     }
 
     function initializeGame() {
+        // Reset ball position at the start of each hole
         ballX = 50;
         ballY = canvas.height / 2 - ballRadius; // Ball's bottom should align with the top edge of the green rectangle
         holeX = canvas.width - Math.random() * 200 - 50;
@@ -177,25 +178,13 @@
 
             // Ball should not get behind the hole visually, ensure it's drawn above the hole
             if (distanceToHole < holeRadius + ballRadius) {
-                // Lower the ball further down towards the bottom of the hole, simulating gravity
-                if (ballY < holeY + holeRadius + 5) {  // Allow ball to drop lower into the hole
-                    ballSpeedY += 0.1;  // Gradual fall towards the hole's bottom
-                }
+                moving = false;
+                ballSpeedX = 0;
+                ballSpeedY = 0;
+                ballX = holeX;
+                ballY = holeY;
 
-                // Ball bounces off the back edge if hit too hard
-                if (ballY < holeY) {
-                    const bounceDistance = holeY - ballY + ballRadius;
-                    if (ballX > holeX - holeRadius && ballX < holeX + holeRadius) {
-                        ballSpeedY = -ballSpeedY * 0.5;  // Bounce off the back with reduced speed
-                        ballY = holeY + holeRadius + bounceDistance;  // Make sure the ball doesn't go below the hole
-                    }
-                }
-
-                // Only proceed to the next hole if the ball is at the lowest point of the hole (bottom of the arc)
-                if (ballY >= holeY + holeRadius) {
-                    moving = false;
-                    nextHole(); // Move to next hole automatically when the ball is in the hole
-                }
+                nextHole(); // Move to next hole automatically when the ball is in the hole
             }
             
             // Overshooting the hole if the ball moves too fast
@@ -211,7 +200,11 @@
         document.getElementById('strokes').textContent = strokes;
         document.getElementById('total-strokes').textContent = totalStrokes; // Update total strokes
 
-        // Do not reset the ball yet; only reset if the ball goes in the hole
+        // Reset ball to the original position
+        ballX = 50;
+        ballY = canvas.height / 2 - ballRadius;
+
+        moving = false;  // Stop the ball from moving
     }
 
     function nextHole() {
@@ -223,6 +216,10 @@
         // Generate a new hole position
         holeX = canvas.width - Math.random() * 200 - 50;
         holeY = canvas.height / 2; // Generate new hole position on the surface of the green
+
+        // Reset ball position at the start of the hole
+        ballX = 50;
+        ballY = canvas.height / 2 - ballRadius;
     }
 
     function handlePowerStart(event) {
