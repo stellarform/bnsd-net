@@ -67,6 +67,7 @@
 <div class="scoreboard">
     <p>Hole: <span id="hole-number">1</span></p>
     <p>Strokes: <span id="strokes">0</span></p>
+    <p>Total Strokes: <span id="total-strokes">0</span></p> <!-- Added total strokes -->
 </div>
 
 <canvas id="gameCanvas"></canvas>
@@ -88,7 +89,7 @@
 
     let ballX, ballY, ballRadius = 8;
     let holeX, holeY;
-    let strokes = 0, holeNumber = 1;
+    let strokes = 0, holeNumber = 1, totalStrokes = 0; // Added totalStrokes
     let moving = false;
     let ballSpeedX = 0, ballSpeedY = 0;
 
@@ -106,6 +107,7 @@
         strokes = 0;
         document.getElementById('strokes').textContent = strokes;
         document.getElementById('hole-number').textContent = holeNumber;
+        document.getElementById('total-strokes').textContent = totalStrokes; // Update total strokes
     }
 
     function drawBall() {
@@ -161,33 +163,51 @@
             const holeRadius = 13.3;  // Updated hole radius after increase
             const distanceToHole = Math.sqrt(Math.pow(ballX - holeX, 2) + Math.pow(ballY - holeY, 2));
 
-            // If the ball is inside the hole (ball's center is inside the hole region)
+            // Ball should not get behind the hole visually, ensure it's drawn above the hole
             if (distanceToHole < holeRadius + ballRadius) {
+                // Lower the ball towards the bottom of the hole, simulating gravity
                 if (ballY < holeY + holeRadius) {
-                    ballSpeedY = 0; // Stop vertical movement once the ball reaches the hole
+                    ballSpeedY += 0.1;  // Gradual fall towards the hole's bottom
+                }
 
-                    // Apply gravity to lower the ball inside the hole
-                    ballY += 0.5; // Increase this value if gravity needs to be stronger
-
-                    // Check if the ball has reached the bottom of the hole
-                    if (ballY >= holeY + holeRadius) {
-                        nextHole(); // Ball has fallen into the hole
-                    }
+                // If the ball is inside the hole radius, check if it passes over the hole
+                if (ballY >= holeY + holeRadius) {
+                    nextHole(); // Ball has fallen into the hole
                 }
             }
-
-            // If the ball is not inside the hole, check if it's near the hole
-            if (ballY >= holeY + holeRadius) {
-                nextHole();  // Ball has dropped into the hole
+            
+            // Overshooting the hole if the ball moves too fast
+            if (ballX > holeX + holeRadius) {
+                overshootHole();  // Ball overshot the hole, restart the hole
             }
         }
+    }
+
+    function overshootHole() {
+        strokes++;
+        totalStrokes++; // Count as an extra stroke for overshoot
+        document.getElementById('strokes').textContent = strokes;
+        document.getElementById('total-strokes').textContent = totalStrokes; // Update total strokes
+
+        // Immediately reset the ball position
+        ballX = 50;
+        ballY = canvas.height / 2 - ballRadius; // Reset ball position at the top edge of the green
+        moving = false;
+        ballSpeedX = 0;
+        ballSpeedY = 0;
+
+        // Generate a new hole position
+        holeX = canvas.width - Math.random() * 200 - 50;
+        holeY = canvas.height / 2; // Generate new hole position on the surface of the green
     }
 
     function nextHole() {
         holeNumber++;
         strokes = 0;
+        totalStrokes++; // Count the completion of the hole
         document.getElementById('hole-number').textContent = holeNumber;
         document.getElementById('strokes').textContent = strokes;
+        document.getElementById('total-strokes').textContent = totalStrokes; // Update total strokes
 
         // Immediately reset the ball position
         ballX = 50;
@@ -236,7 +256,9 @@
         ballSpeedY = 0;
         moving = true;
         strokes++;
+        totalStrokes++; // Count total strokes
         document.getElementById('strokes').textContent = strokes;
+        document.getElementById('total-strokes').textContent = totalStrokes; // Update total strokes
     }
 
     function resetPowerBarButton() {
@@ -265,5 +287,3 @@
 
 </body>
 </html>
-
-
