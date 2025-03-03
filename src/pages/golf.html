@@ -118,8 +118,11 @@
 
     function drawHole() {
         ctx.beginPath();
-        // Half circle for the hole, cutting the top half off
-        ctx.arc(holeX, holeY, 10, Math.PI, 2 * Math.PI); // Draw the bottom half of the hole
+        // Draw the top flat part of the hole on the green surface
+        ctx.rect(holeX - 10, holeY - 10, 20, 10); // Flat top, part of hole inside the green
+
+        // Draw the half-circle under the flat part (open side facing downwards)
+        ctx.arc(holeX, holeY + 10, 10, Math.PI, 2 * Math.PI); // Half circle starting at the green surface and extending downward
         ctx.fillStyle = "#000000";
         ctx.fill();
         ctx.closePath();
