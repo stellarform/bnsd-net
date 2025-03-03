@@ -100,9 +100,9 @@
 
     function initializeGame() {
         ballX = 50;
-        ballY = canvas.height / 2 - 30; // Ball sits just above the green section
+        ballY = canvas.height / 2; // Align the ball with the top edge of the green rectangle
         holeX = canvas.width - Math.random() * 200 - 50;
-        holeY = canvas.height / 2 - 30; // Hole sits just above the green section
+        holeY = canvas.height / 2; // Hole sits on the surface of the green
         strokes = 0;
         document.getElementById('strokes').textContent = strokes;
         document.getElementById('hole-number').textContent = holeNumber;
@@ -175,14 +175,14 @@
 
         // Immediately reset the ball position
         ballX = 50;
-        ballY = canvas.height / 2 - 30; // Reset ball position above the green section
+        ballY = canvas.height / 2; // Reset ball position at the top edge of the green
         moving = false;
         ballSpeedX = 0;
         ballSpeedY = 0;
 
         // Generate a new hole position
         holeX = canvas.width - Math.random() * 200 - 50;
-        holeY = canvas.height / 2 - 30; // Generate new hole position above the green section
+        holeY = canvas.height / 2; // Generate new hole position on the surface of the green
     }
 
     function handlePowerStart(event) {
