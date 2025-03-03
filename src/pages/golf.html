@@ -102,7 +102,7 @@
         ballX = 50;
         ballY = canvas.height / 2 - ballRadius; // Ball's bottom should align with the top edge of the green rectangle
         holeX = canvas.width - Math.random() * 200 - 50;
-        holeY = canvas.height / 2 + 20; // Hole sits on the surface of the green (y-axis position adjusted)
+        holeY = canvas.height / 2; // Hole sits on the surface of the green
         strokes = 0;
         document.getElementById('strokes').textContent = strokes;
         document.getElementById('hole-number').textContent = holeNumber;
@@ -118,9 +118,9 @@
 
     function drawHole() {
         ctx.beginPath();
-        // Create a half-circle hole facing down
-        ctx.arc(holeX, holeY, 10, 0, Math.PI, false); // Half-circle hole, with the flat part on top
-        ctx.fillStyle = "#000000"; // Hole color (black)
+        // Draw the hole as a full circle, but we'll "cut" the top part where the blue overlaps.
+        ctx.arc(holeX, holeY, 10, 0, Math.PI); // Draw a semi-circle, now flipped with the flat part on top
+        ctx.fillStyle = "#000000"; // Hole color
         ctx.fill();
         ctx.closePath();
     }
@@ -162,8 +162,7 @@
                 moving = false;
             }
 
-            // Check if the ball hits the hole's bottom part
-            if (Math.abs(ballX - holeX) < 10 && ballY >= holeY - 10 && ballY <= holeY + 10) {
+            if (Math.abs(ballX - holeX) < 10 && Math.abs(ballY - holeY) < 10) {
                 nextHole();
             }
         }
@@ -184,7 +183,7 @@
 
         // Generate a new hole position
         holeX = canvas.width - Math.random() * 200 - 50;
-        holeY = canvas.height / 2 + 20; // Generate new hole position on the surface of the green
+        holeY = canvas.height / 2; // Generate new hole position on the surface of the green
     }
 
     function handlePowerStart(event) {
@@ -196,7 +195,7 @@
         if (!isDragging) return;
 
         // Get the mouse/touch position
-        let clientX = event.touches ? event.tches[0].clientX : event.clientX;
+        let clientX = event.touches ? event.touches[0].clientX : event.clientX;
         let rect = powerBarContainer.getBoundingClientRect();
 
         // Constrain the switch movement from left to right (never goes past the right side of the container)
