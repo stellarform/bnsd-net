@@ -226,8 +226,10 @@
     function nextHole() {
         holeNumber++;
         strokes = 0;
+        totalStrokes++; // Count the completion of the hole
         document.getElementById('hole-number').textContent = holeNumber;
         document.getElementById('strokes').textContent = strokes;
+        document.getElementById('total-strokes').textContent = totalStrokes; // Update total strokes
 
         // Immediately reset the ball position
         ballX = 50;
