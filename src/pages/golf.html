@@ -34,32 +34,32 @@
             position: absolute;
             bottom: 50px;
             right: 30px;
-            width: 60px;
-            height: 250px;
+            width: 300px; /* Horizontal power bar */
+            height: 50px;
             background: #ccc;
-            border-radius: 30px;
+            border-radius: 25px;
             display: flex;
             align-items: center;
-            justify-content: center;
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
         }
         .power-bar {
             width: 100%;
             height: 100%;
-            background: linear-gradient(to top, green, yellow, red); /* Color gradient from green (bottom) to red (top) */
+            background: linear-gradient(to right, green, yellow, red); /* Color gradient from left (green) to right (red) */
             position: absolute;
-            bottom: 0;
-            border-radius: 30px;
+            left: 0;
+            border-radius: 25px;
         }
         .power-switch {
             position: absolute;
-            width: 40px;
-            height: 40px;
+            width: 30px; /* Square switch */
+            height: 30px;
             background: silver;
-            border-radius: 50%;
+            border-radius: 5px;
             cursor: grab;
-            bottom: 0; /* Start at the bottom */
-            transition: transform 0.1s ease-out; /* Smooth transition for switch release */
+            left: 0; /* Start at the left */
+            transition: transform 0.1s ease-out;
         }
     </style>
 </head>
@@ -195,17 +195,17 @@
         if (!isDragging) return;
 
         // Get the mouse/touch position
-        let clientY = event.touches ? event.touches[0].clientY : event.clientY;
+        let clientX = event.touches ? event.touches[0].clientX : event.clientX;
         let rect = powerBarContainer.getBoundingClientRect();
 
-        // Constrain the switch movement from bottom to top (never goes below 0 or above the container height)
-        let y = Math.min(Math.max(clientY - rect.top, 0), rect.height);
+        // Constrain the switch movement from left to right (never goes past the right side of the container)
+        let x = Math.min(Math.max(clientX - rect.left, 0), rect.width - powerSwitch.offsetWidth);
 
         // Calculate power level based on position
-        powerLevel = Math.round((rect.height - y) / rect.height * maxPower);
+        powerLevel = Math.round((x / rect.width) * maxPower);
 
         // Move the switch button within bounds
-        powerSwitch.style.transform = `translateY(${y - 20}px)`;  // 20px offset for centering the switch
+        powerSwitch.style.transform = `translateX(${x}px)`;
     }
 
     function handlePowerEnd(event) {
@@ -217,7 +217,7 @@
 
     function shootBall() {
         if (moving) return;
-        ballSpeedX = powerLevel;
+        ballSpeedX = powerLevel * 5;  // Increased multiplier for more noticeable speed
         ballSpeedY = 0;
         moving = true;
         strokes++;
@@ -225,7 +225,7 @@
     }
 
     function resetPowerBarButton() {
-        powerSwitch.style.transform = "translateY(0px)"; // Reset button to the bottom
+        powerSwitch.style.transform = "translateX(0px)"; // Reset button to the left
         powerLevel = 0; // Reset the power level
     }
 
