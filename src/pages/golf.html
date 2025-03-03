@@ -102,7 +102,7 @@
         ballX = 50;
         ballY = canvas.height / 2 - ballRadius; // Ball's bottom should align with the top edge of the green rectangle
         holeX = canvas.width - Math.random() * 200 - 50;
-        holeY = canvas.height / 2; // Hole sits on the surface of the green
+        holeY = canvas.height / 2 + 20; // Hole sits on the surface of the green (y-axis position adjusted)
         strokes = 0;
         document.getElementById('strokes').textContent = strokes;
         document.getElementById('hole-number').textContent = holeNumber;
@@ -117,22 +117,12 @@
     }
 
     function drawHole() {
-        ctx.save();
-        // Clip the hole into the green section, using the path below to simulate a cutout
         ctx.beginPath();
-        ctx.arc(holeX, holeY, 10, 0, Math.PI * 2);
-        ctx.fillStyle = "#228B22"; // The green color (grass)
-        ctx.fill();
-        ctx.clip();
-
-        // Now draw the hole as a "cutout" into the green by drawing a background of blue
-        ctx.globalCompositeOperation = 'source-over';
-        ctx.beginPath();
-        ctx.arc(holeX, holeY, 10, 0, Math.PI * 2);
+        // Create a half-circle hole facing down
+        ctx.arc(holeX, holeY, 10, 0, Math.PI, false); // Half-circle hole, with the flat part on top
         ctx.fillStyle = "#000000"; // Hole color (black)
         ctx.fill();
         ctx.closePath();
-        ctx.restore();
     }
 
     function drawPowerPreview() {
@@ -172,7 +162,8 @@
                 moving = false;
             }
 
-            if (Math.abs(ballX - holeX) < 10 && Math.abs(ballY - holeY) < 10) {
+            // Check if the ball hits the hole's bottom part
+            if (Math.abs(ballX - holeX) < 10 && ballY >= holeY - 10 && ballY <= holeY + 10) {
                 nextHole();
             }
         }
@@ -193,7 +184,7 @@
 
         // Generate a new hole position
         holeX = canvas.width - Math.random() * 200 - 50;
-        holeY = canvas.height / 2; // Generate new hole position on the surface of the green
+        holeY = canvas.height / 2 + 20; // Generate new hole position on the surface of the green
     }
 
     function handlePowerStart(event) {
@@ -205,7 +196,7 @@
         if (!isDragging) return;
 
         // Get the mouse/touch position
-        let clientX = event.touches ? event.touches[0].clientX : event.clientX;
+        let clientX = event.touches ? event.tches[0].clientX : event.clientX;
         let rect = powerBarContainer.getBoundingClientRect();
 
         // Constrain the switch movement from left to right (never goes past the right side of the container)
