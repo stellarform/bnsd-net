@@ -108,11 +108,8 @@
     let ballSpeedX = 0, ballSpeedY = 0;
 
     function resizeCanvas() {
-        canvas.width = window.innerWidth * 2;  // Double resolution for better rendering
-        canvas.height = window.innerHeight * 2; // Double resolution for better rendering
-        canvas.style.width = '100%';
-        canvas.style.height = '100%';
-        ctx.scale(2, 2);  // Scale the drawing to fit the original canvas size
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
         initializeGame();
     }
 
@@ -297,5 +294,3 @@
 
 </body>
 </html>
-
-
