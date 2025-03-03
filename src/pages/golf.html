@@ -118,11 +118,16 @@
 
     function drawHole() {
         ctx.beginPath();
-        // Draw the hole as a full circle, but we'll "cut" the top part where the blue overlaps.
-        ctx.arc(holeX, holeY, 10, 0, Math.PI); // Draw a semi-circle, now flipped with the flat part on top
-        ctx.fillStyle = "#87CEEB"; // Light blue color for the hole
-        ctx.fill();
+        // Draw the hole as a larger rectangle with rounded corners (top half) inside the green section
+        ctx.moveTo(holeX - 50, holeY - 30); // Start at the left edge of the hole's rectangle
+        ctx.lineTo(holeX + 50, holeY - 30); // Move to the right edge of the hole's rectangle
+        ctx.lineTo(holeX + 50, holeY + 10);  // Draw the bottom right corner
+        ctx.lineTo(holeX - 50, holeY + 10);  // Draw the bottom left corner
         ctx.closePath();
+
+        // Fill the hole with light blue to simulate it cutting into the green
+        ctx.fillStyle = "#87CEEB";
+        ctx.fill();
     }
 
     function drawPowerPreview() {
@@ -154,7 +159,19 @@
             ballX += ballSpeedX;
             ballY += ballSpeedY;
             ballSpeedX *= 0.98;
-            ballSpeedY *= 0.98;
+            ballSpeedY += 0.5; // Simulate gravity by gradually increasing the downward velocity
+
+            // Check if the ball is over the hole and apply gravity
+            let holeLeft = holeX - 50;
+            let holeRight = holeX + 50;
+            let holeTop = holeY - 30; // Adjust as necessary for the hole's vertical bounds
+            let holeBottom = holeY + 10;
+
+            if (ballX >= holeLeft && ballX <= holeRight && ballY >= holeTop && ballY <= holeBottom) {
+                // Ball is over the hole, apply gravity (pull it downward)
+                ballSpeedY = Math.max(ballSpeedY, 0); // Prevent the ball from bouncing back up
+                ballY += 0.5; // Apply gravity by lowering the ball
+            }
 
             if (Math.abs(ballSpeedX) < 0.1 && Math.abs(ballSpeedY) < 0.1) {
                 ballSpeedX = 0;
@@ -163,7 +180,7 @@
             }
 
             // Collision check with the hole
-            let holeRadius = 10;
+            let holeRadius = 50; // Adjust hole radius
             let distanceToHole = Math.sqrt(Math.pow(ballX - holeX, 2) + Math.pow(ballY - holeY, 2));
 
             // Check if the ball has fallen into the hole (it must be inside the hole, not just touching)
@@ -257,3 +274,4 @@
 
 </body>
 </html>
+
