@@ -184,19 +184,20 @@
     }
 
     function handlePowerStart(event) {
+        event.preventDefault();
         isDragging = true;
     }
 
     function handlePowerMove(event) {
         if (!isDragging) return;
-        let touch = event.touches ? event.touches[0] : event;
+        let clientY = event.touches ? event.touches[0].clientY : event.clientY;
         let rect = powerBarContainer.getBoundingClientRect();
-        let y = Math.min(Math.max(touch.clientY - rect.top, 0), rect.height);
+        let y = Math.min(Math.max(clientY - rect.top, 0), rect.height);
         powerLevel = Math.round((rect.height - y) / rect.height * maxPower);
         powerSwitch.style.transform = `translateY(${y - 10}px)`;
     }
 
-    function handlePowerEnd() {
+    function handlePowerEnd(event) {
         if (!isDragging) return;
         isDragging = false;
         shootBall();
@@ -217,16 +218,15 @@
         requestAnimationFrame(gameLoop);
     }
 
-    // Add event listeners for both mobile (touch) and desktop (mouse)
     window.addEventListener('resize', resizeCanvas);
     
-    const events = ['touchstart', 'mousedown'];
-    const moveEvents = ['touchmove', 'mousemove'];
-    const endEvents = ['touchend', 'mouseup', 'mouseleave'];
+    powerSwitch.addEventListener('touchstart', handlePowerStart);
+    powerSwitch.addEventListener('touchmove', handlePowerMove);
+    powerSwitch.addEventListener('touchend', handlePowerEnd);
 
-    events.forEach(event => powerSwitch.addEventListener(event, handlePowerStart));
-    moveEvents.forEach(event => powerSwitch.addEventListener(event, handlePowerMove));
-    endEvents.forEach(event => powerSwitch.addEventListener(event, handlePowerEnd));
+    powerSwitch.addEventListener('mousedown', handlePowerStart);
+    document.addEventListener('mousemove', handlePowerMove);
+    document.addEventListener('mouseup', handlePowerEnd);
 
     resizeCanvas();
     gameLoop();
