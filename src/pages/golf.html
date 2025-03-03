@@ -211,12 +211,7 @@
         document.getElementById('strokes').textContent = strokes;
         document.getElementById('total-strokes').textContent = totalStrokes; // Update total strokes
 
-        // Immediately reset the ball position
-        ballX = 50;
-        ballY = canvas.height / 2 - ballRadius; // Reset ball position at the top edge of the green
-        moving = false;
-        ballSpeedX = 0;
-        ballSpeedY = 0;
+        // Do not reset the ball yet; only reset if the ball goes in the hole
     }
 
     function nextHole() {
@@ -224,13 +219,6 @@
         strokes = 0;  // Reset strokes for the next hole
         document.getElementById('hole-number').textContent = holeNumber;
         document.getElementById('strokes').textContent = strokes;
-
-        // Immediately reset the ball position
-        ballX = 50;
-        ballY = canvas.height / 2 - ballRadius; // Reset ball position at the top edge of the green
-        moving = false;
-        ballSpeedX = 0;
-        ballSpeedY = 0;
 
         // Generate a new hole position
         holeX = canvas.width - Math.random() * 200 - 50;
