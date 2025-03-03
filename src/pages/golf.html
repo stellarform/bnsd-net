@@ -118,11 +118,12 @@
 
     function drawHole() {
         ctx.beginPath();
-        // Draw the hole as a full circle, but we'll "cut" the top part where the blue overlaps.
-        ctx.arc(holeX, holeY, 10, 0, Math.PI); // Draw a semi-circle, now flipped with the flat part on top
+        ctx.arc(holeX, holeY, 15, Math.PI, 0); // Bigger hole with a larger radius (15)
+        ctx.lineTo(holeX - 15, holeY + 5);  // Flattened bottom part (the hole's bottom is flat)
+        ctx.lineTo(holeX + 15, holeY + 5);  // Flatten the other side
+        ctx.closePath();
         ctx.fillStyle = "#87CEEB"; // Light blue color for the hole
         ctx.fill();
-        ctx.closePath();
     }
 
     function drawPowerPreview() {
@@ -162,8 +163,13 @@
                 moving = false;
             }
 
+            // If the ball goes off the screen, reset the ball and hole
+            if (ballX < 0 || ballX > canvas.width || ballY < 0 || ballY > canvas.height) {
+                resetGame();
+            }
+
             // Collision check with the hole
-            let holeRadius = 10;
+            let holeRadius = 15;
             let distanceToHole = Math.sqrt(Math.pow(ballX - holeX, 2) + Math.pow(ballY - holeY, 2));
 
             // Check if the ball has fallen into the hole (it must be inside the hole, not just touching)
@@ -191,6 +197,17 @@
         // Generate a new hole position
         holeX = canvas.width - Math.random() * 200 - 50;
         holeY = canvas.height / 2; // Generate new hole position on the surface of the green
+    }
+
+    function resetGame() {
+        // Reset ball and hole position if the ball goes off the screen
+        holeX = canvas.width - Math.random() * 200 - 50;
+        holeY = canvas.height / 2;
+        ballX = 50;
+        ballY = canvas.height / 2 - ballRadius;
+        ballSpeedX = 0;
+        ballSpeedY = 0;
+        moving = false;
     }
 
     function handlePowerStart(event) {
