@@ -118,7 +118,6 @@
         ballY = canvas.height / 2 - ballRadius; // Ball's bottom should align with the top edge of the green rectangle
         holeX = canvas.width - Math.random() * 200 - 50;
         holeY = canvas.height / 2; // Hole sits on the surface of the green
-        strokes = 0;
         document.getElementById('strokes').textContent = strokes;
         document.getElementById('hole-number').textContent = holeNumber;
         document.getElementById('total-strokes').textContent = totalStrokes; // Update total strokes
@@ -222,7 +221,7 @@
 
     function nextHole() {
         holeNumber++;
-        strokes = 0;
+        strokes = 0;  // Reset strokes for the next hole
         document.getElementById('hole-number').textContent = holeNumber;
         document.getElementById('strokes').textContent = strokes;
 
@@ -272,7 +271,7 @@
         ballSpeedX = powerLevel * 5;  // Increased multiplier for more noticeable speed
         ballSpeedY = 0;
         moving = true;
-        strokes++;
+        strokes++; // Increment strokes for this hole on each shot
         totalStrokes++; // Update total strokes immediately after a shot
         document.getElementById('strokes').textContent = strokes;
         document.getElementById('total-strokes').textContent = totalStrokes; // Update total strokes
