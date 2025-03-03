@@ -117,20 +117,12 @@
     }
 
     function drawHole() {
-        ctx.save();
-        // Define a custom SVG path for the hole with a sharper edge and flatter bottom
         ctx.beginPath();
-        // Path data to create the hole shape (flat bottom, half circle above)
-        ctx.moveTo(holeX - 10, holeY); // Start at the left edge of the hole
-        ctx.lineTo(holeX + 10, holeY); // Move to the right edge of the hole
-        ctx.arcTo(holeX + 10, holeY - 10, holeX - 10, holeY - 10, 10); // Arc to the top to create half-circle top
-        ctx.lineTo(holeX - 10, holeY - 10); // Go back left
-        ctx.arcTo(holeX - 10, holeY + 10, holeX + 10, holeY + 10, 10); // Bottom flat part
-        ctx.closePath();
-
+        // Draw the hole as a full circle, but we'll "cut" the top part where the blue overlaps.
+        ctx.arc(holeX, holeY, 10, Math.PI, 0); // Draw a semi-circle, cutting off the top
         ctx.fillStyle = "#000000"; // Hole color
         ctx.fill();
-        ctx.restore();
+        ctx.closePath();
     }
 
     function drawPowerPreview() {
