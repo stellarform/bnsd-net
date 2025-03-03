@@ -100,7 +100,7 @@
 
     function initializeGame() {
         ballX = 50;
-        ballY = canvas.height / 2; // Align the ball with the top edge of the green rectangle
+        ballY = canvas.height / 2 - ballRadius; // Ball's bottom should align with the top edge of the green rectangle
         holeX = canvas.width - Math.random() * 200 - 50;
         holeY = canvas.height / 2; // Hole sits on the surface of the green
         strokes = 0;
@@ -118,7 +118,8 @@
 
     function drawHole() {
         ctx.beginPath();
-        ctx.arc(holeX, holeY, 10, 0, Math.PI * 2);
+        // Half circle for the hole, cutting the top half off
+        ctx.arc(holeX, holeY, 10, Math.PI, 2 * Math.PI); // Draw the bottom half of the hole
         ctx.fillStyle = "#000000";
         ctx.fill();
         ctx.closePath();
@@ -175,7 +176,7 @@
 
         // Immediately reset the ball position
         ballX = 50;
-        ballY = canvas.height / 2; // Reset ball position at the top edge of the green
+        ballY = canvas.height / 2 - ballRadius; // Reset ball position at the top edge of the green
         moving = false;
         ballSpeedX = 0;
         ballSpeedY = 0;
