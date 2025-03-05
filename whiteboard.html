@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Whiteboard</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f4;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        #brushSizeSlider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 70%;
+            height: 5px;
+            background: #ddd;
+            border-radius: 5px;
+            outline: none;
+            transition: background 0.3s ease;
+             transform: translateY(-2px); /* Moves the element 4px upwards */
+
+        }
+
+        #brushSizeSlider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 12px;
+            height: 12px;
+            background-color: #000000;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        #brushSizeSlider::-webkit-slider-thumb:hover {
+            background-color: #000000;
+        }
+
+        #brushSizeSlider::-moz-range-track {
+            background: #ddd;
+            border-radius: 5px;
+            height: 8px;
+        }
+
+        #brushSizeSlider::-moz-range-thumb {
+            background-color: #000000;
+            border-radius: 50%;
+            width: 15px;
+            height: 15px;
+            cursor: pointer;
+        }
+
+        #brushSizeValue {
+            font-size: 13px;
+            color: #000000;
+            text-align: center;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 500;
+        }
+
+        .container {
+            position: relative;
+            width: 90vw;
+            height: 0;
+            padding-top: 50%;
+            justify-content: space-between;
+            max-width: 1200px;
+        }
+
+        .frame {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: white;
+            border: 10px solid lightgrey;
+            border-radius: 32px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: lightgrey;
+            padding: 0px 15px;
+            border-radius: 20px 20px 0 0;
+            padding-bottom: 10px;
+        }
+
+        .controls .left{
+            border-radius: 55px;
+        }
+        .controls .middle,
+        .controls .right {
+            display: flex;
+            align-items: center;
+        }
+
+        .left {
+            gap: 10px; /* space between buttons */
+            border-radius: 55px;
+        }
+
+        .middle {
+            gap: 5px; /* space between buttons */
+        
+        }
+
+        .color-btn {
+            width: 20px;
+            height: 15px;
+            border: none;
+            cursor: pointer;
+            border-radius: 2px;
+        }
+
+        .slider-container {
+            padding: 7px 10px;
+            padding-left: 12px;
+            padding-top: 0px;
+            padding-bottom: 0px;
+            padding-right: 2px;
+            cursor: pointer;
+            border-radius: 32px;
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            background-color: white;
+            align-items: center;
+            width: 110px;
+            height: 27px;
+        }
+
+        button {
+            padding: 2px 15px;
+            cursor: pointer;
+            border-radius: 32px;
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            background-color: white;
+            border: 0px solid rgb(255, 255, 255);
+            font-size: 12px;
+            font-weight: 500;
+            align-items: center;
+        }
+
+        button:hover {
+            background-color: #ececec; /* Darkens the button on hover */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="frame">
+            <div class="controls">
+                <div class="left">
+                    <!-- Group 1: Clear and Eraser buttons -->
+                    <button id="clearBtn">Clear</button>
+                    <button id="eraserBtn">Eraser</button>
+                </div>
+                <div class="middle">
+                    <!-- Group 2: Color buttons -->
+                    <button class="color-btn" id="colorRed" style="background-color: red;"></button>
+                    <button class="color-btn" id="colorGreen" style="background-color: green;"></button>
+                    <button class="color-btn" id="colorBlue" style="background-color: blue;"></button>
+                    <button class="color-btn" id="colorBlack" style="background-color: black;"></button>
+                </div>
+                <div class="right">
+                    <!-- Brush size control -->
+                    <div class="slider-container">
+                        <label for="brushSizeSlider"></label>
+                        <input type="range" id="brushSizeSlider" min="1" max="50" value="5" step="1">
+                        <span id="brushSizeValue">5</span>
+                    </div>
+                </div>
+            </div>
+            <div class="canvas-container">
+                <canvas id="whiteboard" width="1000" height="500"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('whiteboard');
+        const ctx = canvas.getContext('2d');
+        let drawing = false;
+        let currentColor = 'black';
+        let eraserMode = false;
+        let eraserSize = 5;
+        let lastX = 0;
+        let lastY = 0;
+        let lastTime = 0;
+        const ppiScale = window.devicePixelRatio;
+        let brushSize = 5 * ppiScale;
+        ctx.lineWidth = brushSize;
+        
+        function drawLine(x1, y1, x2, y2) {
+            const cp1X = (x1 + x2) / 2;
+            const cp1Y = (y1 + y2) / 2;
+            ctx.lineTo(cp1X, cp1Y);
+            ctx.stroke();
+        }
+        
+        function smoothDraw(x1, y1, x2, y2, size) {
+            const steps = 10;
+            const dx = (x2 - x1) / steps;
+            const dy = (y2 - y1) / steps;
+            for (let i = 0; i < steps; i++) {
+                const intermediateX = x1 + dx * i;
+                const intermediateY = y1 + dy * i;
+                ctx.lineTo(intermediateX, intermediateY);
+            }
+            ctx.lineWidth = size;
+            ctx.stroke();
+        }
+        
+        canvas.addEventListener('mousedown', (e) => {
+            drawing = true;
+            lastX = e.offsetX;
+            lastY = e.offsetY;
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+        });
+        
+        canvas.addEventListener('mousemove', (e) => {
+            if (drawing) {
+                if (eraserMode) {
+                    ctx.save();
+                    ctx.globalCompositeOperation = 'destination-out';
+                    ctx.beginPath();
+                    ctx.arc(e.offsetX, e.offsetY, eraserSize / 2, 0, Math.PI * 2, false);
+                    ctx.fill();
+                    ctx.restore();
+                } else {
+                    const currentTime = new Date().getTime();
+                    const timeDiff = currentTime - lastTime;
+                    if (timeDiff > 10) {
+                        smoothDraw(lastX, lastY, e.offsetX, e.offsetY, brushSize);
+                        lastX = e.offsetX;
+                        lastY = e.offsetY;
+                        lastTime = currentTime;
+                    }
+                }
+            }
+        });
+        
+        canvas.addEventListener('mouseup', () => { drawing = false; });
+        document.getElementById('clearBtn').addEventListener('click', () => { ctx.clearRect(0, 0, canvas.width, canvas.height); });
+        document.getElementById('eraserBtn').addEventListener('click', () => {
+            eraserMode = !eraserMode;
+            currentColor = eraserMode ? 'white' : 'black';
+            document.getElementById('eraserBtn').style.backgroundColor = eraserMode ? '#ccc' : 'lightgrey';
+        });
+        
+        document.querySelectorAll('.color-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                currentColor = button.style.backgroundColor;
+                eraserMode = false;
+                document.getElementById('eraserBtn').style.backgroundColor = 'lightgrey';
+            });
+        });
+        
+        canvas.addEventListener('mousedown', () => { ctx.strokeStyle = currentColor; });
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        
+        const brushSizeSlider = document.getElementById('brushSizeSlider');
+        const brushSizeValue = document.getElementById('brushSizeValue');
+        brushSizeSlider.addEventListener('input', (e) => {
+            brushSize = e.target.value * ppiScale;
+            eraserSize = e.target.value;
+            ctx.lineWidth = brushSize;
+            brushSizeValue.textContent = e.target.value;
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
