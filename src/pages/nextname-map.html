@@ -36,7 +36,7 @@
       border-radius: 10px;
       overflow: hidden;
     }
-    /* Map controls: revert to original colors */
+    /* Map controls */
     .map-button-bar {
       background-color: #1a1a1a;
       padding: 10px;
@@ -181,6 +181,7 @@
       transition: none;
       margin: 0;
       padding: 10px 0;
+      width: 60px;
     }
     .isolate-button.selected {
       background-color: #1a1a1a;
@@ -192,10 +193,7 @@
       color: #464646;
       width: 60px;
     }
-    #resetSortingButton {
-      background-color: #1a1a1a;
-      color: #464646;
-    }
+    /* Note: Reset button has been removed from the HTML, so no styling is needed for it. */
     th.active-sort { background-color: #333; }
     /* Dropdown menu styling */
     .sort-menu {
@@ -316,7 +314,7 @@
       </div>
       <div class="button-group right">
         <button id="animationControlButton" class="map-button">Animation: On</button>
-        <button id="resetButton" class="map-button">Reset</button>
+        <!-- Reset button removed from here -->
       </div>
     </div>
     <svg id="map" viewBox="0 0 1000 600" preserveAspectRatio="xMidYMid meet"></svg>
@@ -1061,30 +1059,35 @@
         isolateBtn.className = "isolate-button";
         
         if (athlete === isolatedAthlete) {
+          // When unselecting, use an ease zoom transition and clear isolation
           isolateBtn.textContent = "Unselect";
           isolateBtn.classList.add("selected");
-        } else {
-          isolateBtn.textContent = "Select";
-        }
-        
-        isolateBtn.onclick = function() {
-          gOverlay.selectAll(".line, .dot").interrupt().remove();
-          pendingTimeouts.forEach(id => clearTimeout(id));
-          pendingTimeouts = [];
-          
-          if (athlete === isolatedAthlete) {
+          isolateBtn.onclick = function() {
+            gOverlay.selectAll(".line, .dot").interrupt().remove();
+            pendingTimeouts.forEach(id => clearTimeout(id));
+            pendingTimeouts = [];
+            // Clear isolation so that all rows become un-greyed.
             isolatedAthlete = null;
-            svg.call(zoomBehavior.transform, d3.zoomIdentity);
+            // Use an ease zoom transition like reset zoom (300ms)
+            svg.transition().duration(300).call(zoomBehavior.transform, d3.zoomIdentity);
+            // Override animation to draw instantly.
             resetMap(true);
             populateTable();
-          } else {
+          };
+        } else {
+          isolateBtn.textContent = "Select";
+          isolateBtn.onclick = function() {
+            gOverlay.selectAll(".line, .dot").interrupt().remove();
+            pendingTimeouts.forEach(id => clearTimeout(id));
+            pendingTimeouts = [];
             isolatedAthlete = athlete;
+            // When selecting an athlete, draw instantly
             drawCurvedLine(athlete.hometownCoords, athlete.schoolCoords, true);
             addDots(athlete.hometownCoords, athlete.schoolCoords);
             populateTable();
             centerOnAthlete(athlete);
-          }
-        };
+          };
+        }
         
         isolateCell.appendChild(isolateBtn);
         row.insertCell().textContent = athlete.name;
@@ -1172,18 +1175,17 @@
       }
     }
     
-    // Table reset button.
+    // Table reset button: Override animation and use eased zoom transition.
     document.getElementById("resetSortingButton").addEventListener("click", () => {
       isolatedAthlete = null;
-      svg.call(zoomBehavior.transform, d3.zoomIdentity);
-      resetMap(true);
+      currentSort = {};
+      currentSchoolStateFilters = [];
+      currentHometownStateFilters = [];
+      currentSportFilter = "All";
+      document.querySelectorAll('.sort-menu button').forEach(btn => btn.classList.remove('active'));
       populateTable();
-    });
-    
-    // Map control reset button.
-    const resetButton = document.getElementById("resetButton");
-    resetButton.addEventListener("click", () => {
-      resetMap(!animationEnabled);
+      svg.transition().duration(300).call(zoomBehavior.transform, d3.zoomIdentity);
+      resetMap(true);
     });
     
     // Animation toggle.
@@ -1207,7 +1209,8 @@
       currentSportFilter = "All";
       document.querySelectorAll('.sort-menu button').forEach(btn => btn.classList.remove('active'));
       populateTable();
-      resetMap();
+      svg.transition().duration(300).call(zoomBehavior.transform, d3.zoomIdentity);
+      resetMap(true);
     }
     document.getElementById("resetSortingButton").addEventListener("click", resetSorting);
     
