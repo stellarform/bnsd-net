@@ -23,8 +23,8 @@
       font-family: 'Roboto', sans-serif;
       text-align: center;
       margin: 0;
-      padding-top: 75px;
-      padding-bottom: 75px;
+      padding-top: 40px;
+      padding-bottom: 40px;
     }
     /* Title styling */
     h1 {
@@ -34,22 +34,49 @@
     /* Map container styling */
     .map-container {
       position: relative;
-      display: flex;
-      justify-content: center;
-      align-items: center;
       width: 95%;
-      margin: 0 auto 50px auto;
-      background-color: #444;
-      border-radius: 8px;
-      padding: 10px;
-      max-width: 1425px;
-      overflow-x: auto;
       margin: 20px auto;
-      padding: 0 0px;
+      background-color: #444;
+      border-radius: 10px;
+      overflow: hidden;
+      max-width: 1425px;
+    }
+    /* Integrated button bar styling */
+    .map-button-bar {
+      background-color: #444;
+      padding: 10px;
+      display: flex;
+      align-items: center;
+      border-bottom: 1px solid #555;
+    }
+    /* Grouping the left and right controls */
+    .button-group {
+      display: flex;
+      gap: 10px;
+    }
+    .button-group.right {
+      margin-left: auto;
+    }
+    /* Style for controls to match the isolate buttons */
+    .map-button {
+      background-color: #2b2b2b;
+      border: none;
+      border-radius: 4px;
+      padding: 8px 12px;
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      font-size: 9pt;
+      font-weight: 300;
+      font-family: Roboto;
+    }
+    .map-button:hover {
+      background-color: #777;
     }
     svg {
       width: 100%;
       height: auto;
+      display: block;
     }
     .map {
       fill: black;
@@ -117,9 +144,8 @@
       margin: 0 auto;
       border-collapse: separate;
       border-spacing: 0;
-      border-radius: 8px;
+      border-radius: 10px;
       overflow: hidden;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
       background-color: #444;
     }
     th, td {
@@ -135,8 +161,8 @@
     thead th {
       background-color: #2b2b2b;
       color: white;
-      font-size: 12pt;
-      font-weight: 600;
+      font-size: 11pt;
+      font-weight: 500;
       cursor: pointer;
       padding: 12px 16px;
       position: relative;
@@ -150,8 +176,8 @@
       border-bottom: 1px solid #555;
     }
     td {
-      font-size: 11pt;
-      font-weight: 400;
+      font-size: 10pt;
+      font-weight: 300;
     }
     th::after {
       content: "";
@@ -169,7 +195,7 @@
     /* Dropdown menu styling */
     .sort-menu {
       display: none;
-      position: absolute;  /* Absolute positioning relative to the document body */
+      position: absolute;
       background-color: #2b2b2b;
       padding: 8px 0;
       border-radius: 0 0 8px 8px;
@@ -204,7 +230,7 @@
       text-align: left;
       padding: 0 10px;
       font-size: 12pt;
-      border-bottom: 1px solid #555;
+      border-bottom: 0px solid #555;
       margin-bottom: 5px;
     }
     /* Isolate column and button styling */
@@ -218,7 +244,7 @@
       border: none;
       border-radius: 4px;
       padding: 8px 12px;
-      color: white;
+      color: #969696;
       cursor: pointer;
       transition: background-color 0.3s;
       font-size: 9pt;
@@ -235,37 +261,13 @@
     #resetSortingButton {
       background-color: #2b2b2b;
     }
-    /* Zoom controls styling */
-    .zoom-controls {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      z-index: 200;
-    }
-    .zoom-controls button {
-      padding: 5px 10px;
-      margin-right: 5px;
-      font-family: 'Roboto', sans-serif;
-    }
-    /* Map controls styling on top right */
-    .map-controls.top-right {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      z-index: 200;
-    }
-    .map-controls.top-right button {
-      padding: 5px 10px;
-      margin-left: 5px;
-      font-family: 'Poppins', sans-serif;
-    }
     /* Active sort header styling */
     th.active-sort {
       background-color: #333;
     }
     /* Mobile styles */
     @media (max-width: 600px) {
-      h1 { font-size: 25pt; }
+      h1 { font-size: 22pt; }
       h2 { font-size: 18pt; }
       h3 { font-size: 16pt; }
       h4 { font-size: 14pt; }
@@ -333,23 +335,26 @@
   <h1>Athlete Database</h1>
   
   <div class="map-container">
-    <!-- Zoom controls (top left) -->
-    <div class="zoom-controls">
-      <button id="zoomIn">+</button>
-      <button id="zoomOut">-</button>
-      <button id="resetZoom">Reset Zoom</button>
+    <!-- Integrated Button Bar -->
+    <div class="map-button-bar">
+      <div class="button-group left">
+        <button id="zoomIn" class="map-button">+</button>
+        <button id="zoomOut" class="map-button">-</button>
+        <button id="resetZoom" class="map-button">Reset Zoom</button>
+      </div>
+      <div class="button-group right">
+        <button id="animationControlButton" class="map-button">Animation: On</button>
+        <button id="resetButton" class="map-button">Reset</button>
+      </div>
     </div>
-    <!-- Map controls (Animation & Reset) on top right -->
-    <div class="map-controls top-right">
-      <button id="animationControlButton">Animation: On</button>
-      <button id="resetButton">Reset</button>
-    </div>
+    <!-- Map SVG -->
     <svg id="map" viewBox="0 0 1000 600" preserveAspectRatio="xMidYMid meet"></svg>
     <!-- Loading animation bar overlay -->
     <div id="loadingBar">
       <div id="loadingProgress"></div>
     </div>
   </div>
+  
   <div class="table-container">
     <table>
       <thead>
@@ -368,9 +373,6 @@
           <th id="hometownHeader">
             Hometown
             <div class="sort-menu">
-              <button onclick="sortTableButton('hometown', 'asc', this)">Sort by Name Ascending</button>
-              <button onclick="sortTableButton('hometown', 'desc', this)">Sort by Name Descending</button>
-              <hr>
               <span class="filter-title">Filter by State:</span>
               <div id="hometownStateButtons"></div>
             </div>
@@ -378,9 +380,6 @@
           <th id="schoolHeader">
             School
             <div class="sort-menu">
-              <button onclick="sortTableButton('school', 'asc', this)">Sort by Name Ascending</button>
-              <button onclick="sortTableButton('school', 'desc', this)">Sort by Name Descending</button>
-              <hr>
               <span class="filter-title">Filter by State:</span>
               <div id="schoolStateButtons"></div>
             </div>
@@ -395,6 +394,7 @@
               <button onclick="filterTableBySport('Golf', this)">Golf</button>
               <button onclick="filterTableBySport('Swimming & Diving', this)">Swimming & Diving</button>
               <button onclick="filterTableBySport('Track & Field', this)">Track & Field</button>
+              <button onclick="filterTableBySport('Volleyball', this)">Volleyball</button>
             </div>
           </th>
         </tr>
@@ -402,6 +402,7 @@
       <tbody id="athleteTable"></tbody>
     </table>
   </div>
+  
   <script>
     // Global animation flag.
     let animationEnabled = true;
@@ -443,7 +444,6 @@
     function hideDropdown() {
       if (currentDropdown && currentDropdownParent) {
         currentDropdown.style.display = "none";
-        // Optionally, move it back into the header (or leave it in the body)
         currentDropdownParent.appendChild(currentDropdown);
       }
       currentDropdown = null;
@@ -469,11 +469,48 @@
     
     // Global athlete list.
     const athletes = [
-      { name: "Player 1", hometown: "Chicago, IL", school: "Washington, DC", sport: "Football" },
-      { name: "Player 2", hometown: "Los Angeles, CA", school: "Boston, MA", sport: "Basketball" },
-      { name: "Player 3", hometown: "Gainesville, FL", school: "Champaign, IL", sport: "Basketball" },
-      { name: "Player 4", hometown: "Houston, TX", school: "Scottsdale, AZ", sport: "Basketball" },
-      { name: "Player 5", hometown: "Napa, CA", school: "Eugene, OR", sport: "Baseball" }
+        { name: "Coleman Hawkins", hometown: "Sacramento, CA", school: "Manhattan, KS", sport: "Basketball" },
+        { name: "Luke Goode", hometown: "Fort Wayne, IN", school: "Bloomington, IN", sport: "Basketball" },
+        { name: "Ty Rodgers", hometown: "Saginaw, MI", school: "Champaign, IL", sport: "Basketball" },
+        { name: "Maya Imoto-Eakin", hometown: "Honolulu, HI", school: "Hilo, HI", sport: "Volleyball" },
+        { name: "Sencire Harris", hometown: "North Canton, OH", school: "Morgantown, WV", sport: "Basketball" },
+        { name: "Dain Dainja", hometown: "Brooklyn Park, MN", school: "Memphis, TN", sport: "Basketball" },
+        { name: "Robert Castillo", hometown: "Glendora, CA", school: "Huntington Beach, CA", sport: "Baseball" },
+        { name: "Myah Hazelton", hometown: "Baltimore, MD", school: "Blacksburg, VA", sport: "Basketball" },
+        { name: "Clay Shelton", hometown: "Williamsburg, KY", school: "Williamsburg, KY", sport: "Baseball" },
+        { name: "Merik Carter", hometown: "Shelbyville, TN", school: "Boiling Springs, NC", sport: "Baseball" },
+        { name: "Lily Barry", hometown: "Emden, IL", school: "Champaign, IL", sport: "Volleyball" },
+        { name: "Brooke Mosher", hometown: "Waterloo, WI", school: "Champaign, IL", sport: "Volleyball" },
+        { name: "Kayla Burbage", hometown: "Clayton, NC", school: "Champaign, IL", sport: "Volleyball" },
+        { name: "Lani White", hometown: "Irvine, CA", school: "Blacksburg, VA", sport: "Basketball" },
+        { name: "Cooper Donlin", hometown: "Plymouth, MI", school: "Honolulu, HI", sport: "Baseball" },
+        { name: "Jackson Buchanan", hometown: "Dacula, GA", school: "Champaign, IL", sport: "Golf" },
+        { name: "Alex Rodriguez", hometown: "Bourbonnais, IL", school: "Edwardsville, IL", sport: "Baseball" },
+        { name: "Kylee Sessions", hometown: "Leesburg, VA", school: "Champaign, IL", sport: "Swimming & Diving" },
+        { name: "Peyton Fitzherbert", hometown: "Palm City, FL", school: "Lakeland, FL", sport: "Soccer" },
+        { name: "Sophie Stephenson", hometown: "Seattle, WA", school: "Los Angeles, CA", sport: "Volleyball" },
+        { name: "Matt Haley", hometown: "Fenton, MO", school: "Springfield, MO", sport: "Baseball" },
+        { name: "Dante Zamudio", hometown: "Sylmar, CA", school: "Northridge, CA", sport: "Baseball" },
+        { name: "Will Semb", hometown: "De Pere, WI", school: "Minneapolis, MN", sport: "Baseball" },
+        { name: "Caroline Barnes", hometown: "Naperville, IL", school: "Champaign, IL", sport: "Volleyball" },
+        { name: "Bianca May", hometown: "Orland Park, IL", school: "Champaign, IL", sport: "Volleyball" },
+        { name: "Gabby Dean", hometown: "Columbus, IN", school: "Champaign, IL", sport: "Volleyball" },
+        { name: "Bryson \"Cecil\" Lofton", hometown: "Dalton, GA", school: "Carbondale, IL", sport: "Baseball" },
+        { name: "Dante Thompson", hometown: "Montgomery Village, MD", school: "Arlington Heights, IL", sport: "Football" },
+        { name: "Sarah Bingham", hometown: "Fairway, KS", school: "Champaign, IL", sport: "Volleyball" },
+        { name: "Cari Bohm", hometown: "Ann Arbor, MI", school: "Champaign, IL", sport: "Volleyball" },
+        { name: "Anna Ritter", hometown: "New Albany, OH", school: "Champaign, IL", sport: "Golf" },
+        { name: "Bryce Barnes", hometown: "Gaithersburg, MD", school: "Williamsburg, VA", sport: "Football" },
+        { name: "Ryan Voois", hometown: "Ladera Ranch, CA", school: "Champaign, IL", sport: "Golf" },
+        { name: "Easton Moore", hometown: "Zionsville, IN", school: "Rock Hill, SC", sport: "Baseball" },
+        { name: "Coby Rogers", hometown: "Fenton, MO", school: "Emporia, KS", sport: "Baseball" },
+        { name: "Sebastian Gonzalez", hometown: "Oakley, CA", school: "Honolulu, HI", sport: "Baseball" },
+        { name: "Quincy Thornton", hometown: "Morgantown, WV", school: "Martin, TN", sport: "Baseball" },
+        { name: "Reece Ihenacho", hometown: "Fox River Grove, IL", school: "Champaign, IL", sport: "Track & Field" },
+        { name: "Nate Dorinsky", hometown: "Columbus, OH", school: "Greensburg, PA", sport: "Baseball" },
+        { name: "Taylor Lauterbach", hometown: "Appleton, WI", school: "Charlottesville, VA", sport: "Basketball" },
+        { name: "Olivia McGhee", hometown: "Louisa, VA", school: "Charlottesville, VA", sport: "Basketball" },
+
     ];
     
     let currentSportFilter = "All";
@@ -667,7 +704,7 @@
     }
     
     // Dropdown toggle.
-    document.querySelectorAll("th").forEach(th => {
+    document.querySelectorAll("thead th").forEach(th => {
       th.addEventListener("click", function(e) {
         if (e.target.tagName.toLowerCase() === "button") return;
         const menu = th.querySelector(".sort-menu");
