@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Athlete Tracker</title>
-  <!-- Google Fonts for Poppins -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <title>Athlete Database</title>
+  <!-- Google Fonts for Roboto -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
   <script src="https://d3js.org/d3.v6.min.js"></script>
   <script src="https://d3js.org/topojson.v1.min.js"></script>
   <style>
@@ -18,21 +18,34 @@
       overflow-x: hidden;
     }
     body {
-      background-color: #333;
+      background-color: #5c5c5c;
       color: white;
-      font-family: 'Poppins', sans-serif;
+      font-family: 'Roboto', sans-serif;
       text-align: center;
       margin: 0;
-      padding: 0;
+      padding-top: 75px;
+      padding-bottom: 75px;
     }
+    /* Title styling */
+    h1 {
+      margin: 5px 0;
+      margin-bottom: 32px;
+    }
+    /* Map container styling */
     .map-container {
       position: relative;
       display: flex;
       justify-content: center;
       align-items: center;
-      width: 100%;
-      max-width: 1000px;
-      margin: 0 auto;
+      width: 95%;
+      margin: 0 auto 50px auto;
+      background-color: #444;
+      border-radius: 8px;
+      padding: 10px;
+      max-width: 1425px;
+      overflow-x: auto;
+      margin: 20px auto;
+      padding: 0 0px;
     }
     svg {
       width: 100%;
@@ -53,7 +66,6 @@
       fill: rgb(255, 255, 255);
       stroke: rgb(255, 255, 255);
       stroke-width: 1;
-      r: 3;
     }
     /* Loading bar overlay styles */
     #loadingBar {
@@ -91,16 +103,17 @@
       50% { width: 100%; }
       100% { width: 0%; }
     }
-    /* Table container with 7px side padding */
+    /* Table container with side padding */
     .table-container {
       width: 100%;
       overflow-x: auto;
       margin: 20px auto;
-      padding: 0 7px;
+      padding: 0 0px;
+      max-width: 1500px;
     }
     /* Modern table styling */
     table {
-      width: 90%;
+      width: 95%;
       margin: 0 auto;
       border-collapse: separate;
       border-spacing: 0;
@@ -126,8 +139,9 @@
       font-weight: 600;
       cursor: pointer;
       padding: 12px 16px;
+      position: relative;
     }
-    /* Isolate header for Reset Sorting button */
+    /* Isolate header styling */
     th.isolate-header {
       background-color: #2b2b2b;
       border: none;
@@ -152,23 +166,20 @@
       font-size: 16px;
       margin-left: 5px;
     }
-    /* Dropdown menu styling (desktop) */
+    /* Dropdown menu styling */
     .sort-menu {
       display: none;
-      position: absolute;
+      position: absolute;  /* Absolute positioning relative to the document body */
       background-color: #2b2b2b;
       padding: 8px 0;
       border-radius: 0 0 8px 8px;
-      top: 100%;
-      left: 0;
-      width: 100%;
       box-shadow: 0 2px 4px rgba(0,0,0,0.2);
       z-index: 10;
       max-height: 500px;
       overflow-y: auto;
     }
     .sort-menu button {
-      font-family: 'Poppins', sans-serif;
+      font-family: 'Roboto', sans-serif;
       font-size: 11pt;
       text-align: left;
       width: 100%;
@@ -179,16 +190,15 @@
       cursor: pointer;
       transition: background-color 0.3s;
     }
-    .sort-menu button.active,
-    .sort-menu button:hover {
-      background-color: #777;
+    .sort-menu button:hover,
+    .sort-menu button.active {
+      background-color: #333;
     }
     .sort-menu hr {
       border: 0;
       border-top: 1px solid #555;
       margin: 5px 0;
     }
-    /* Filter title styling (desktop) */
     .filter-title {
       display: block;
       text-align: left;
@@ -197,7 +207,7 @@
       border-bottom: 1px solid #555;
       margin-bottom: 5px;
     }
-    /* Isolate column and button styling (desktop) */
+    /* Isolate column and button styling */
     th.isolate-header,
     td.isolate-cell {
       width: 60px;
@@ -211,7 +221,9 @@
       color: white;
       cursor: pointer;
       transition: background-color 0.3s;
-      font-size: 11pt;
+      font-size: 9pt;
+      font-weight: 300;
+      font-family: Roboto;
     }
     .isolate-button:hover {
       background-color: #777;
@@ -223,44 +235,45 @@
     #resetSortingButton {
       background-color: #2b2b2b;
     }
-    /* Animation Control buttons styling (desktop) */
-    .animation-buttons {
-      margin: 20px auto;
-      display: flex;
-      justify-content: center;
-      gap: 10px;
+    /* Zoom controls styling */
+    .zoom-controls {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 200;
     }
-    .animation-button {
-      background-color: #555;
-      border: none;
-      border-radius: 4px;
-      padding: 8px 12px;
-      color: white;
-      cursor: pointer;
-      transition: background-color 0.3s;
-      min-width: 140px;
-      font-size: 11pt;
+    .zoom-controls button {
+      padding: 5px 10px;
+      margin-right: 5px;
+      font-family: 'Roboto', sans-serif;
     }
-    .animation-button:hover {
-      background-color: #777;
+    /* Map controls styling on top right */
+    .map-controls.top-right {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 200;
     }
-    .animation-button.active {
-      background-color: #969696;
+    .map-controls.top-right button {
+      padding: 5px 10px;
+      margin-left: 5px;
+      font-family: 'Poppins', sans-serif;
     }
-    /* Mobile styles: reduce desktop font sizes by approximately 3pt for all buttons and header items */
+    /* Active sort header styling */
+    th.active-sort {
+      background-color: #333;
+    }
+    /* Mobile styles */
     @media (max-width: 600px) {
-      /* Generic header scaling */
       h1 { font-size: 25pt; }
       h2 { font-size: 18pt; }
       h3 { font-size: 16pt; }
       h4 { font-size: 14pt; }
       h5 { font-size: 12pt; }
       h6 { font-size: 10pt; }
-      /* Table elements */
       thead th { font-size: 9pt; padding: 8px 10px; }
       td { font-size: 8pt; padding: 8px 10px; }
       .filter-title { font-size: 9pt; }
-      /* Buttons: apply to all button elements */
       button, .sort-menu button, .animation-button, .isolate-button {
         font-size: 8pt;
         padding: 8px 10px;
@@ -269,13 +282,68 @@
   </style>
 </head>
 <body>
-  <h1>Athlete Tracker</h1>
-  <!-- Animation Control Button Cluster -->
-  <div class="animation-buttons">
-    <button id="animationControlButton" class="animation-button active">Animation: On</button>
-    <button id="resetButton" class="animation-button">Reset</button>
-  </div>
+  <!-- Combined SVG placed at the very top with increased size and white fill -->
+  <svg id="Layer_1" style="height: 1.25em; vertical-align: middle; display: block; margin: 0 auto 5px auto;" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 99.9 12.44">
+    <path fill="white" d="
+      M8.49 8.42 L2.31 0 L0 0 L0 12.42 L2.37 12.42 L2.37 3.97 L8.55 12.42 L10.86 12.42 L10.86 0 L8.49 0 Z
+      M12.53 12.42 L21.95 12.42 L21.95 10.1 L14.9 10.1 L14.9 7.37 L21.2 7.37 L21.2 5.03 L14.9 5.03 L14.9 2.32 L21.95 2.32 L21.95 0 L12.53 0 Z
+      M37.7 2.3 L41.65 2.3 L41.65 12.42 L44.02 12.42 L44.02 2.3 L47.97 2.3 L47.97 0 L37.7 0 Z
+      M58.15 8.42 L51.97 0 L49.66 0 L49.66 12.42 L52.02 12.42 L52.03 3.97 L58.21 12.42 L60.51 12.42 L60.52 0 L58.15 0 Z
+      M67.46 0 l-5.27 12.41 h2.6 s1.39-3.29 1.39-3.29 h4.89 s1.39 3.29 1.39 3.29 h2.6 S69.79 0 69.79 0 h-2.33 Z
+      M67.13 6.86 l1.5-3.58 1.5 3.58 h-2.99 Z
+      M82.77 5.01 L78.99 0 L76.69 0 L76.68 12.42 L79.05 12.42 L79.05 4.05 L82.78 8.77 L86.42 4.08 L86.42 12.42 L88.79 12.42 L88.79 0 L86.49 0 L82.77 5.01 Z
+      M99.89 2.32 L99.9 0 L90.48 0 L90.47 12.42 L99.89 12.42 L99.89 10.1 L92.84 10.1 L92.84 7.37 L99.14 7.37 L99.14 5.03 L92.84 5.03 L92.84 2.32 L99.89 2.32 Z
+      M25.17 0.94 h1.11 
+        l3.26 4.32 
+        l0.3 0.39 
+        l0.3 -0.4 
+        l3.26 -4.32 
+        h1.14 
+        l-3.89 5.05 
+        l-0.18 0.23 
+        l0.18 0.23 
+        l3.89 5.07 
+        h-1.1 
+        l-3.31 -4.36 
+        l-0.3 -0.39 
+        l-0.3 0.4 
+        l-3.27 4.36 
+        h-1.1 
+        l3.9 -5.06 
+        l0.18 -0.23 
+        l-0.18 -0.23 
+        l-3.9 -5.06
+      M23.29 0 
+        l4.79 6.22 
+        l-4.79 6.22 
+        h3.4 
+        s3.14 -4.16 3.14 -4.16 
+        l3.15 4.17 
+        h3.4 
+        s-4.79 -6.22 -4.79 -6.22 
+        L36.37 0 
+        h-3.4 
+        s-3.14 4.16 -3.14 4.16 
+        L26.69 0 
+        h-3.4 Z
+    "/>
+  </svg>
+  
+  <!-- Title -->
+  <h1>Athlete Database</h1>
+  
   <div class="map-container">
+    <!-- Zoom controls (top left) -->
+    <div class="zoom-controls">
+      <button id="zoomIn">+</button>
+      <button id="zoomOut">-</button>
+      <button id="resetZoom">Reset Zoom</button>
+    </div>
+    <!-- Map controls (Animation & Reset) on top right -->
+    <div class="map-controls top-right">
+      <button id="animationControlButton">Animation: On</button>
+      <button id="resetButton">Reset</button>
+    </div>
     <svg id="map" viewBox="0 0 1000 600" preserveAspectRatio="xMidYMid meet"></svg>
     <!-- Loading animation bar overlay -->
     <div id="loadingBar">
@@ -288,7 +356,7 @@
         <tr>
           <!-- Leftmost header cell: Reset Sorting button -->
           <th class="isolate-header">
-            <button id="resetSortingButton" class="isolate-button">Reset Sorting</button>
+            <button id="resetSortingButton" class="isolate-button">Reset</button>
           </th>
           <th id="nameHeader">
             Athlete Name
@@ -337,9 +405,7 @@
   <script>
     // Global animation flag.
     let animationEnabled = true;
-    // Global flag to hide the loading bar when the first valid draw is triggered.
     let loadingBarHidden = false;
-    // Multi-select filter arrays for School and Hometown.
     let currentSchoolStateFilters = [];
     let currentHometownStateFilters = [];
     
@@ -365,10 +431,11 @@
       if (!menu) return;
       currentDropdown = menu;
       currentDropdownParent = th;
+      // Compute the absolute coordinates relative to the document.
       const rect = th.getBoundingClientRect();
-      menu.style.position = "fixed";
-      menu.style.top = rect.bottom + "px";
-      menu.style.left = rect.left + "px";
+      menu.style.position = "absolute";
+      menu.style.top = (rect.bottom + window.scrollY) + "px";
+      menu.style.left = (rect.left + window.scrollX) + "px";
       menu.style.width = rect.width + "px";
       menu.style.display = "block";
       document.body.appendChild(menu);
@@ -376,19 +443,22 @@
     function hideDropdown() {
       if (currentDropdown && currentDropdownParent) {
         currentDropdown.style.display = "none";
+        // Optionally, move it back into the header (or leave it in the body)
         currentDropdownParent.appendChild(currentDropdown);
       }
       currentDropdown = null;
       currentDropdownParent = null;
     }
     
-    // D3 Map Drawing.
+    // Create a main group for all map elements.
     const width = 1000, height = 600;
     const svg = d3.select("#map");
+    const gAll = svg.append("g");
+    
     const projection = d3.geoAlbersUsa().translate([width/2, height/2]).scale(1200);
     const path = d3.geoPath().projection(projection);
     d3.json("https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json").then(us => {
-      svg.append("g")
+      gAll.append("g")
         .selectAll("path")
         .data(topojson.feature(us, us.objects.states).features)
         .enter()
@@ -401,7 +471,7 @@
     const athletes = [
       { name: "Player 1", hometown: "Chicago, IL", school: "Washington, DC", sport: "Football" },
       { name: "Player 2", hometown: "Los Angeles, CA", school: "Boston, MA", sport: "Basketball" },
-      { name: "Player 3", hometown: "Gainseville, FL", school: "Champaign, IL", sport: "Basketball" },
+      { name: "Player 3", hometown: "Gainesville, FL", school: "Champaign, IL", sport: "Basketball" },
       { name: "Player 4", hometown: "Houston, TX", school: "Scottsdale, AZ", sport: "Basketball" },
       { name: "Player 5", hometown: "Napa, CA", school: "Eugene, OR", sport: "Baseball" }
     ];
@@ -535,7 +605,7 @@
           } else {
             document.querySelectorAll(".isolate-button").forEach(b => b.classList.remove("selected"));
             this.classList.add("selected");
-            svg.selectAll(".line, .dot").remove();
+            gAll.selectAll(".line, .dot").remove();
             drawSingleAthlete(athlete);
           }
         };
@@ -554,6 +624,13 @@
     function sortTableButton(category, order, btnElement) {
       btnElement.parentElement.querySelectorAll('button').forEach(b => b.classList.remove('active'));
       btnElement.classList.add('active');
+      
+      document.querySelectorAll("thead th").forEach(th => th.classList.remove("active-sort"));
+      const parentTh = btnElement.closest("th");
+      if (parentTh) {
+        parentTh.classList.add("active-sort");
+      }
+      
       sortTable(category, order);
       hideDropdown();
     }
@@ -629,7 +706,7 @@
     function drawCurvedLine(hometown, school) {
       const midpoint = [(hometown[0] + school[0]) / 2, (hometown[1] + school[1]) / 2 + 5];
       const lineData = [hometown, midpoint, school].map(d => projection(d));
-      let line = svg.append("path")
+      let line = gAll.append("path")
         .datum(lineData)
         .attr("class", "line")
         .attr("d", d3.line().curve(d3.curveBasis))
@@ -643,12 +720,12 @@
     }
     
     function addDots(hometown, school) {
-      svg.append("circle")
+      gAll.append("circle")
         .attr("class", "dot")
         .attr("cx", projection(hometown)[0])
         .attr("cy", projection(hometown)[1])
         .attr("r", 3);
-      svg.append("circle")
+      gAll.append("circle")
         .attr("class", "dot")
         .attr("cx", projection(school)[0])
         .attr("cy", projection(school)[1])
@@ -660,26 +737,18 @@
     animationControlButton.addEventListener("click", function() {
       animationEnabled = !animationEnabled;
       this.textContent = animationEnabled ? "Animation: On" : "Animation: Off";
-      if (animationEnabled) {
-        this.classList.add("active");
-      } else {
-        this.classList.remove("active");
-      }
     });
     
-    // Helper: Reset map functionality.
     function resetMap() {
-      svg.selectAll(".line, .dot").remove();
+      gAll.selectAll(".line, .dot").remove();
       loadingBarHidden = false;
       document.getElementById("loadingBar").style.display = "flex";
       drawLines();
     }
     
-    // Reset button for map.
     const resetButton = document.getElementById("resetButton");
     resetButton.addEventListener("click", resetMap);
     
-    // Combined Reset Sorting.
     function resetSorting() {
       for (let i = athletes.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -726,6 +795,24 @@
     updateSchoolStateButtons();
     updateHometownStateButtons();
     populateTable();
+    
+    // Zoom/Pan Functionality.
+    const zoomBehavior = d3.zoom()
+      .scaleExtent([0.5, 5])
+      .on("zoom", (event) => {
+        gAll.attr("transform", event.transform);
+      });
+    svg.call(zoomBehavior);
+    
+    document.getElementById("zoomIn").addEventListener("click", () => {
+      svg.transition().duration(300).call(zoomBehavior.scaleBy, 1.2);
+    });
+    document.getElementById("zoomOut").addEventListener("click", () => {
+      svg.transition().duration(300).call(zoomBehavior.scaleBy, 0.8);
+    });
+    document.getElementById("resetZoom").addEventListener("click", () => {
+      svg.transition().duration(300).call(zoomBehavior.transform, d3.zoomIdentity);
+    });
   </script>
 </body>
 </html>
