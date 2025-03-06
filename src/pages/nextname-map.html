@@ -1,357 +1,731 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Athlete Tracker</title>
-    <script src="https://d3js.org/d3.v6.min.js"></script>
-    <script src="https://d3js.org/topojson.v1.min.js"></script>
-    <style>
-        body {
-            background-color: #333;
-            color: white;
-            font-family: Arial, sans-serif;
-            text-align: center;
-        }
-        .map-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 100%;
-            max-width: 1000px;
-            height: auto;
-            margin: 0 auto;
-        }
-        svg {
-            width: 100%;
-            height: auto;
-        }
-        .map {
-            fill: black;
-            stroke: #444;
-            stroke-width: 0.5;
-        }
-        .line {
-            fill: none;
-            stroke: red;
-            stroke-width: 2;
-            stroke-linecap: round;
-        }
-        .dot {
-            fill: red;
-            stroke: red;
-            stroke-width: 2;
-            r: 3;
-        }
-        table {
-            width: 80%;
-            margin: 20px auto;
-            border-collapse: collapse;
-        }
-        th, td {
-            border: 1px solid white;
-            padding: 8px;
-            text-align: left;
-        }
-        th {
-            cursor: pointer;
-            position: relative;
-        }
-
-        th::after {
-            content: " "; /* No line, just space */
-            width: 12px;
-            height: 3px;
-            background-color: transparent;
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            transition: transform 0.3s ease, font-size 0.3s ease; /* Transition for smooth arrow change */
-        }
-
-        th.asc::after {
-            content: "↑"; /* Up arrow for ascending */
-            font-size: 18px;
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: white;
-        }
-
-        th.desc::after {
-            content: "↓"; /* Down arrow for descending */
-            font-size: 18px;
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: white;
-        }
-
-        th:not(.asc):not(.desc)::after {
-            content: ""; /* No symbol for inactive columns */
-        }
-
-        .popup {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            justify-content: center;
-            align-items: center;
-        }
-        .popup-content {
-            background-color: #444;
-            padding: 20px;
-            border-radius: 5px;
-            text-align: center;
-        }
-        .popup button {
-            margin: 5px;
-            padding: 10px;
-            background-color: #333;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-        .popup button:hover {
-            background-color: #666;
-        }
-        .sort-menu {
-            display: none;
-            position: absolute;
-            background-color: #444;
-            padding: 10px;
-            border-radius: 5px;
-            top: 100%;
-            left: 0;
-            width: 150px;
-        }
-
-        th:hover .sort-menu {
-            display: block;
-        }
-
-        .sort-menu button {
-            width: 100%;
-            padding: 8px;
-            background-color: #333;
-            color: white;
-            border: none;
-            text-align: left;
-        }
-
-        .sort-menu button:hover {
-            background-color: #666;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Athlete Tracker</title>
+  <!-- Google Fonts for Poppins -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <script src="https://d3js.org/d3.v6.min.js"></script>
+  <script src="https://d3js.org/topojson.v1.min.js"></script>
+  <style>
+    /* Ensure elements don't overhang the screen */
+    * {
+      box-sizing: border-box;
+    }
+    html, body {
+      max-width: 100%;
+      overflow-x: hidden;
+    }
+    body {
+      background-color: #333;
+      color: white;
+      font-family: 'Poppins', sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+    .map-container {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    svg {
+      width: 100%;
+      height: auto;
+    }
+    .map {
+      fill: black;
+      stroke: #444;
+      stroke-width: 0.5;
+    }
+    .line {
+      fill: none;
+      stroke: rgb(255, 255, 255);
+      stroke-width: 2;
+      stroke-linecap: round;
+    }
+    .dot {
+      fill: rgb(255, 255, 255);
+      stroke: rgb(255, 255, 255);
+      stroke-width: 1;
+      r: 3;
+    }
+    /* Loading bar overlay styles */
+    #loadingBar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 100;
+    }
+    #loadingProgress {
+      width: 300px;
+      height: 20px;
+      background: #555;
+      border-radius: 10px;
+      overflow: hidden;
+      position: relative;
+    }
+    #loadingProgress::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: 0%;
+      background: #969696;
+      animation: loading 1.5s ease-in-out infinite;
+    }
+    @keyframes loading {
+      0% { width: 0%; }
+      50% { width: 100%; }
+      100% { width: 0%; }
+    }
+    /* Table container with 7px side padding */
+    .table-container {
+      width: 100%;
+      overflow-x: auto;
+      margin: 20px auto;
+      padding: 0 7px;
+    }
+    /* Modern table styling */
+    table {
+      width: 90%;
+      margin: 0 auto;
+      border-collapse: separate;
+      border-spacing: 0;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      background-color: #444;
+    }
+    th, td {
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid #555;
+      border-right: 1px solid #555;
+    }
+    th:last-child, td:last-child {
+      border-right: none;
+    }
+    /* Table header styling (desktop) */
+    thead th {
+      background-color: #2b2b2b;
+      color: white;
+      font-size: 12pt;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 12px 16px;
+    }
+    /* Isolate header for Reset Sorting button */
+    th.isolate-header {
+      background-color: #2b2b2b;
+      border: none;
+      padding: 0;
+      border-right: 1px solid #555;
+      border-bottom: 1px solid #555;
+    }
+    td {
+      font-size: 11pt;
+      font-weight: 400;
+    }
+    th::after {
+      content: "";
+    }
+    th.asc::after {
+      content: " ↑";
+      font-size: 16px;
+      margin-left: 5px;
+    }
+    th.desc::after {
+      content: " ↓";
+      font-size: 16px;
+      margin-left: 5px;
+    }
+    /* Dropdown menu styling (desktop) */
+    .sort-menu {
+      display: none;
+      position: absolute;
+      background-color: #2b2b2b;
+      padding: 8px 0;
+      border-radius: 0 0 8px 8px;
+      top: 100%;
+      left: 0;
+      width: 100%;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      z-index: 10;
+      max-height: 500px;
+      overflow-y: auto;
+    }
+    .sort-menu button {
+      font-family: 'Poppins', sans-serif;
+      font-size: 11pt;
+      text-align: left;
+      width: 100%;
+      padding: 10px;
+      background-color: transparent;
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    .sort-menu button.active,
+    .sort-menu button:hover {
+      background-color: #777;
+    }
+    .sort-menu hr {
+      border: 0;
+      border-top: 1px solid #555;
+      margin: 5px 0;
+    }
+    /* Filter title styling (desktop) */
+    .filter-title {
+      display: block;
+      text-align: left;
+      padding: 0 10px;
+      font-size: 12pt;
+      border-bottom: 1px solid #555;
+      margin-bottom: 5px;
+    }
+    /* Isolate column and button styling (desktop) */
+    th.isolate-header,
+    td.isolate-cell {
+      width: 60px;
+      text-align: center;
+    }
+    .isolate-button {
+      background-color: #2b2b2b;
+      border: none;
+      border-radius: 4px;
+      padding: 8px 12px;
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      font-size: 11pt;
+    }
+    .isolate-button:hover {
+      background-color: #777;
+    }
+    .isolate-button.selected {
+      background-color: #969696;
+    }
+    /* Reset Sorting button styling */
+    #resetSortingButton {
+      background-color: #2b2b2b;
+    }
+    /* Animation Control buttons styling (desktop) */
+    .animation-buttons {
+      margin: 20px auto;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+    }
+    .animation-button {
+      background-color: #555;
+      border: none;
+      border-radius: 4px;
+      padding: 8px 12px;
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      min-width: 140px;
+      font-size: 11pt;
+    }
+    .animation-button:hover {
+      background-color: #777;
+    }
+    .animation-button.active {
+      background-color: #969696;
+    }
+    /* Mobile styles: reduce desktop font sizes by approximately 3pt for all buttons and header items */
+    @media (max-width: 600px) {
+      /* Generic header scaling */
+      h1 { font-size: 25pt; }
+      h2 { font-size: 18pt; }
+      h3 { font-size: 16pt; }
+      h4 { font-size: 14pt; }
+      h5 { font-size: 12pt; }
+      h6 { font-size: 10pt; }
+      /* Table elements */
+      thead th { font-size: 9pt; padding: 8px 10px; }
+      td { font-size: 8pt; padding: 8px 10px; }
+      .filter-title { font-size: 9pt; }
+      /* Buttons: apply to all button elements */
+      button, .sort-menu button, .animation-button, .isolate-button {
+        font-size: 8pt;
+        padding: 8px 10px;
+      }
+    }
+  </style>
 </head>
 <body>
-    <h1>Athlete Tracker</h1>
-    <label>
-        <input type="checkbox" id="toggleAnimation" checked> Animate Lines
-    </label>
-    <div class="map-container">
-        <svg id="map" viewBox="0 0 1000 600" preserveAspectRatio="xMidYMid meet"></svg>
+  <h1>Athlete Tracker</h1>
+  <!-- Animation Control Button Cluster -->
+  <div class="animation-buttons">
+    <button id="animationControlButton" class="animation-button active">Animation: On</button>
+    <button id="resetButton" class="animation-button">Reset</button>
+  </div>
+  <div class="map-container">
+    <svg id="map" viewBox="0 0 1000 600" preserveAspectRatio="xMidYMid meet"></svg>
+    <!-- Loading animation bar overlay -->
+    <div id="loadingBar">
+      <div id="loadingProgress"></div>
     </div>
-
+  </div>
+  <div class="table-container">
     <table>
-        <thead>
-            <tr>
-                <th id="nameHeader" onclick="toggleSort('name')">
-                    Athlete Name
-                    <div class="sort-menu">
-                        <button onclick="sortTable('name', 'asc')">Ascending</button>
-                        <button onclick="sortTable('name', 'desc')">Descending</button>
-                    </div>
-                </th>
-                <th id="hometownHeader" onclick="toggleSort('hometown')">
-                    Hometown
-                    <div class="sort-menu">
-                        <button onclick="sortTable('hometown', 'asc')">Ascending</button>
-                        <button onclick="sortTable('hometown', 'desc')">Descending</button>
-                    </div>
-                </th>
-                <th id="schoolHeader" onclick="toggleSort('school')">
-                    School
-                    <div class="sort-menu">
-                        <button onclick="sortTable('school', 'asc')">Ascending</button>
-                        <button onclick="sortTable('school', 'desc')">Descending</button>
-                    </div>
-                </th>
-                <th id="sportHeader" onclick="toggleSort('sport')">
-                    Sport
-                    <div class="sort-menu">
-                        <button onclick="sortTable('sport', 'asc')">Ascending</button>
-                        <button onclick="sortTable('sport', 'desc')">Descending</button>
-                    </div>
-                </th>
-                <th>Show</th>
-            </tr>
-        </thead>
-        <tbody id="athleteTable"></tbody>
+      <thead>
+        <tr>
+          <!-- Leftmost header cell: Reset Sorting button -->
+          <th class="isolate-header">
+            <button id="resetSortingButton" class="isolate-button">Reset Sorting</button>
+          </th>
+          <th id="nameHeader">
+            Athlete Name
+            <div class="sort-menu">
+              <button onclick="sortTableButton('name', 'asc', this)">Sort by Name Ascending</button>
+              <button onclick="sortTableButton('name', 'desc', this)">Sort by Name Descending</button>
+            </div>
+          </th>
+          <th id="hometownHeader">
+            Hometown
+            <div class="sort-menu">
+              <button onclick="sortTableButton('hometown', 'asc', this)">Sort by Name Ascending</button>
+              <button onclick="sortTableButton('hometown', 'desc', this)">Sort by Name Descending</button>
+              <hr>
+              <span class="filter-title">Filter by State:</span>
+              <div id="hometownStateButtons"></div>
+            </div>
+          </th>
+          <th id="schoolHeader">
+            School
+            <div class="sort-menu">
+              <button onclick="sortTableButton('school', 'asc', this)">Sort by Name Ascending</button>
+              <button onclick="sortTableButton('school', 'desc', this)">Sort by Name Descending</button>
+              <hr>
+              <span class="filter-title">Filter by State:</span>
+              <div id="schoolStateButtons"></div>
+            </div>
+          </th>
+          <th id="sportHeader">
+            Sport
+            <div class="sort-menu">
+              <button onclick="filterTableBySport('All', this)">All</button>
+              <button onclick="filterTableBySport('Football', this)">Football</button>
+              <button onclick="filterTableBySport('Baseball', this)">Baseball</button>
+              <button onclick="filterTableBySport('Basketball', this)">Basketball</button>
+              <button onclick="filterTableBySport('Golf', this)">Golf</button>
+              <button onclick="filterTableBySport('Swimming & Diving', this)">Swimming & Diving</button>
+              <button onclick="filterTableBySport('Track & Field', this)">Track & Field</button>
+            </div>
+          </th>
+        </tr>
+      </thead>
+      <tbody id="athleteTable"></tbody>
     </table>
-
-    <script>
-        const width = 1000;
-        const height = 600;
-        const svg = d3.select("#map");
-
-        const projection = d3.geoAlbersUsa().translate([width / 2, height / 2]).scale(1200);
-        const path = d3.geoPath().projection(projection);
-
-        d3.json("https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json").then(us => {
-            svg.append("g")
-                .selectAll("path")
-                .data(topojson.feature(us, us.objects.states).features)
-                .enter().append("path")
-                .attr("class", "map")
-                .attr("d", path);
+  </div>
+  <script>
+    // Global animation flag.
+    let animationEnabled = true;
+    // Global flag to hide the loading bar when the first valid draw is triggered.
+    let loadingBarHidden = false;
+    // Multi-select filter arrays for School and Hometown.
+    let currentSchoolStateFilters = [];
+    let currentHometownStateFilters = [];
+    
+    // Coordinate cache.
+    const coordinateCache = {};
+    async function getCoordinatesCached(city) {
+      if (coordinateCache[city]) return coordinateCache[city];
+      const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${city}`);
+      const data = await response.json();
+      const coords = data.length ? [parseFloat(data[0].lon), parseFloat(data[0].lat)] : null;
+      coordinateCache[city] = coords;
+      return coords;
+    }
+    async function getCoordinates(city) {
+      return await getCoordinatesCached(city);
+    }
+    
+    // Dropdown management.
+    let currentDropdown = null;
+    let currentDropdownParent = null;
+    function showDropdown(th) {
+      const menu = th.querySelector(".sort-menu");
+      if (!menu) return;
+      currentDropdown = menu;
+      currentDropdownParent = th;
+      const rect = th.getBoundingClientRect();
+      menu.style.position = "fixed";
+      menu.style.top = rect.bottom + "px";
+      menu.style.left = rect.left + "px";
+      menu.style.width = rect.width + "px";
+      menu.style.display = "block";
+      document.body.appendChild(menu);
+    }
+    function hideDropdown() {
+      if (currentDropdown && currentDropdownParent) {
+        currentDropdown.style.display = "none";
+        currentDropdownParent.appendChild(currentDropdown);
+      }
+      currentDropdown = null;
+      currentDropdownParent = null;
+    }
+    
+    // D3 Map Drawing.
+    const width = 1000, height = 600;
+    const svg = d3.select("#map");
+    const projection = d3.geoAlbersUsa().translate([width/2, height/2]).scale(1200);
+    const path = d3.geoPath().projection(projection);
+    d3.json("https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json").then(us => {
+      svg.append("g")
+        .selectAll("path")
+        .data(topojson.feature(us, us.objects.states).features)
+        .enter()
+        .append("path")
+        .attr("class", "map")
+        .attr("d", path);
+    });
+    
+    // Global athlete list.
+    const athletes = [
+      { name: "Player 1", hometown: "Chicago, IL", school: "Washington, DC", sport: "Football" },
+      { name: "Player 2", hometown: "Los Angeles, CA", school: "Boston, MA", sport: "Basketball" },
+      { name: "Player 3", hometown: "Gainseville, FL", school: "Champaign, IL", sport: "Basketball" },
+      { name: "Player 4", hometown: "Houston, TX", school: "Scottsdale, AZ", sport: "Basketball" },
+      { name: "Player 5", hometown: "Napa, CA", school: "Eugene, OR", sport: "Baseball" }
+    ];
+    
+    let currentSportFilter = "All";
+    let currentSort = {};
+    
+    // Helper: extract state.
+    function getState(str) {
+      const parts = str.split(',');
+      return parts.length > 1 ? parts[1].trim() : '';
+    }
+    
+    // Update school dropdown options.
+    function updateSchoolStateButtons() {
+      const container = document.getElementById("schoolStateButtons");
+      container.innerHTML = "";
+      let base = athletes;
+      if (currentSportFilter !== "All") {
+        base = base.filter(a => a.sport === currentSportFilter);
+      }
+      if (currentHometownStateFilters.length > 0) {
+        base = base.filter(a => currentHometownStateFilters.includes(getState(a.hometown)));
+      }
+      const stateSet = new Set();
+      base.forEach(athlete => {
+        const state = getState(athlete.school);
+        if (state) stateSet.add(state);
+      });
+      stateSet.forEach(state => {
+        const btn = document.createElement("button");
+        btn.textContent = state;
+        if (currentSchoolStateFilters.includes(state)) btn.classList.add("active");
+        btn.onclick = function(e) {
+          e.stopPropagation();
+          if (currentSchoolStateFilters.includes(state)) {
+            currentSchoolStateFilters = currentSchoolStateFilters.filter(s => s !== state);
+            btn.classList.remove("active");
+          } else {
+            currentSchoolStateFilters.push(state);
+            btn.classList.add("active");
+          }
+          populateTable();
+          hideDropdown();
+        };
+        container.appendChild(btn);
+      });
+    }
+    
+    // Update hometown dropdown options.
+    function updateHometownStateButtons() {
+      const container = document.getElementById("hometownStateButtons");
+      container.innerHTML = "";
+      let base = athletes;
+      if (currentSportFilter !== "All") {
+        base = base.filter(a => a.sport === currentSportFilter);
+      }
+      if (currentSchoolStateFilters.length > 0) {
+        base = base.filter(a => currentSchoolStateFilters.includes(getState(a.school)));
+      }
+      const stateSet = new Set();
+      base.forEach(athlete => {
+        const state = getState(athlete.hometown);
+        if (state) stateSet.add(state);
+      });
+      stateSet.forEach(state => {
+        const btn = document.createElement("button");
+        btn.textContent = state;
+        if (currentHometownStateFilters.includes(state)) btn.classList.add("active");
+        btn.onclick = function(e) {
+          e.stopPropagation();
+          if (currentHometownStateFilters.includes(state)) {
+            currentHometownStateFilters = currentHometownStateFilters.filter(s => s !== state);
+            btn.classList.remove("active");
+          } else {
+            currentHometownStateFilters.push(state);
+            btn.classList.add("active");
+          }
+          populateTable();
+          hideDropdown();
+        };
+        container.appendChild(btn);
+      });
+    }
+    
+    function updateActiveStates() {
+      document.querySelectorAll('#sportHeader .sort-menu button').forEach(b => {
+        if (b.textContent.trim() === currentSportFilter) {
+          b.classList.add("active");
+        } else {
+          b.classList.remove("active");
+        }
+      });
+    }
+    
+    // Filter table by sport.
+    function filterTableBySport(sport, btnElement) {
+      const buttons = btnElement.parentElement.querySelectorAll("button");
+      buttons.forEach(b => b.classList.remove("active"));
+      btnElement.classList.add("active");
+      currentSportFilter = sport;
+      populateTable();
+      hideDropdown();
+    }
+    
+    // Populate table.
+    function populateTable() {
+      const tableBody = document.getElementById("athleteTable");
+      tableBody.innerHTML = "";
+      let filteredAthletes = athletes;
+      if (currentSportFilter !== "All") {
+        filteredAthletes = filteredAthletes.filter(a => a.sport === currentSportFilter);
+      }
+      if (currentSchoolStateFilters.length > 0) {
+        filteredAthletes = filteredAthletes.filter(a => currentSchoolStateFilters.includes(getState(a.school)));
+      }
+      if (currentHometownStateFilters.length > 0) {
+        filteredAthletes = filteredAthletes.filter(a => currentHometownStateFilters.includes(getState(a.hometown)));
+      }
+      filteredAthletes.forEach(athlete => {
+        const row = tableBody.insertRow();
+        const isolateCell = row.insertCell();
+        isolateCell.className = "isolate-cell";
+        const isolateBtn = document.createElement("button");
+        isolateBtn.textContent = "Isolate";
+        isolateBtn.className = "isolate-button";
+        isolateBtn.onclick = function() {
+          if (this.classList.contains("selected")) {
+            this.classList.remove("selected");
+            resetMap();
+          } else {
+            document.querySelectorAll(".isolate-button").forEach(b => b.classList.remove("selected"));
+            this.classList.add("selected");
+            svg.selectAll(".line, .dot").remove();
+            drawSingleAthlete(athlete);
+          }
+        };
+        isolateCell.appendChild(isolateBtn);
+        row.insertCell().textContent = athlete.name;
+        row.insertCell().textContent = athlete.hometown;
+        row.insertCell().textContent = athlete.school;
+        row.insertCell().textContent = athlete.sport;
+      });
+      updateActiveStates();
+      updateSchoolStateButtons();
+      updateHometownStateButtons();
+    }
+    
+    // Sorting functions.
+    function sortTableButton(category, order, btnElement) {
+      btnElement.parentElement.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+      btnElement.classList.add('active');
+      sortTable(category, order);
+      hideDropdown();
+    }
+    function sortTable(category, order) {
+      let sorted = [...athletes];
+      if (category === 'name') {
+        sorted.sort((a, b) => order === 'asc' ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name));
+        currentSort["name"] = order;
+      } else if (category === 'hometown') {
+        sorted.sort((a, b) => order === 'asc' ? a.hometown.localeCompare(b.hometown) : b.hometown.localeCompare(a.hometown));
+        currentSort["hometown"] = order;
+      } else if (category === 'hometown_state') {
+        sorted.sort((a, b) => {
+          const stateA = getState(a.hometown), stateB = getState(b.hometown);
+          return order === 'asc' ? stateA.localeCompare(stateB) : stateB.localeCompare(stateA);
         });
-
-        const athletes = [
-            { name: "Player 1", hometown: "Chicago, IL", school: "Washington, DC", sport: "Football" },
-            { name: "Player 2", hometown: "Los Angeles, CA", school: "Boston, MA", sport: "Basketball" },
-            { name: "Player 3", hometown: "Gainseville, FL", school: "Champaign, IL", sport: "Basketball" },
-            { name: "Player 4", hometown: "Houston, TX", school: "Scottsdale, AZ", sport: "Basketball" },
-            { name: "Player 4", hometown: "Napa, CA", school: "Eugene, OR", sport: "Basketball" },
-        ];
-
-        function populateTable() {
-            const tableBody = document.getElementById("athleteTable");
-            tableBody.innerHTML = "";
-            athletes.forEach((athlete, index) => {
-                let row = tableBody.insertRow();
-                row.insertCell(0).textContent = athlete.name;
-                row.insertCell(1).textContent = athlete.hometown;
-                row.insertCell(2).textContent = athlete.school;
-                row.insertCell(3).textContent = athlete.sport;
-                let showCell = row.insertCell(4);
-                let button = document.createElement("button");
-                button.textContent = "Show";
-                button.onclick = () => {
-                    svg.selectAll(".line, .dot").remove();
-                    drawSingleAthlete(athlete);
-                };
-                showCell.appendChild(button);
-            });
-        }
-
-        async function getCoordinates(city) {
-            const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${city}`);
-            const data = await response.json();
-            if (data.length > 0) {
-                return [parseFloat(data[0].lon), parseFloat(data[0].lat)];
-            }
-            return null;
-        }
-
-        async function drawLines() {
-            for (let athlete of athletes) {
-                await drawSingleAthlete(athlete);
-            }
-        }
-
-        async function drawSingleAthlete(athlete) {
-            const hometownCoords = await getCoordinates(athlete.hometown);
-            const schoolCoords = await getCoordinates(athlete.school);
-            if (hometownCoords && schoolCoords) {
-                drawCurvedLine(hometownCoords, schoolCoords);
-                addDots(hometownCoords, schoolCoords);
-            }
-        }
-
-        function drawCurvedLine(hometown, school) {
-            const midpoint = [(hometown[0] + school[0]) / 2, (hometown[1] + school[1]) / 2 + 5];
-            const lineData = [hometown, midpoint, school].map(d => projection(d));
-
-            let line = svg.append("path")
-                .datum(lineData)
-                .attr("class", "line")
-                .attr("d", d3.line().curve(d3.curveBasis))
-                .attr("stroke-dasharray", function() { return this.getTotalLength(); })
-                .attr("stroke-dashoffset", function() { return this.getTotalLength(); });
-
-            if (document.getElementById("toggleAnimation").checked) {
-                line.transition()
-                    .duration(2000)
-                    .ease(d3.easeLinear)
-                    .attr("stroke-dashoffset", 0);
-            } else {
-                line.attr("stroke-dashoffset", 0);
-            }
-        }
-
-        function addDots(hometown, school) {
-            svg.append("circle")
-                .attr("class", "dot")
-                .attr("cx", projection(hometown)[0])
-                .attr("cy", projection(hometown)[1])
-                .attr("r", 3);
-            svg.append("circle")
-                .attr("class", "dot")
-                .attr("cx", projection(school)[0])
-                .attr("cy", projection(school)[1])
-                .attr("r", 3);
-        }
-
-        // Sorting functionality
-        let currentSort = {};
-
-        function toggleSort(column) {
-            let sortOrder = currentSort[column] === 'asc' ? 'desc' : 'asc';
-            currentSort[column] = sortOrder;
-
-            // Update the header arrow direction
-            document.querySelectorAll('th').forEach(th => {
-                th.classList.remove('asc', 'desc');
-            });
-
-            const header = document.getElementById(column + 'Header');
-            header.classList.add(sortOrder);
-
-            sortTable(column, sortOrder);
-        }
-
-        function sortTable(category, order) {
-            const sortedAthletes = [...athletes].sort((a, b) => {
-                if (category === 'name') {
-                    return order === 'asc' ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name);
-                } else if (category === 'hometown') {
-                    return order === 'asc' ? a.hometown.localeCompare(b.hometown) : b.hometown.localeCompare(a.hometown);
-                } else if (category === 'school') {
-                    return order === 'asc' ? a.school.localeCompare(b.school) : b.school.localeCompare(a.school);
-                } else if (category === 'sport') {
-                    return order === 'asc' ? a.sport.localeCompare(b.sport) : b.sport.localeCompare(a.sport);
-                }
-                return 0;
-            });
-
-            athletes.length = 0;
-            athletes.push(...sortedAthletes);
-            populateTable();
-        }
-
-        document.getElementById("toggleAnimation").addEventListener("change", () => {
-            svg.selectAll(".line").remove();
-            drawLines();
+        currentSort["hometown"] = order === 'asc' ? 'state_asc' : 'state_desc';
+      } else if (category === 'school') {
+        sorted.sort((a, b) => order === 'asc' ? a.school.localeCompare(b.school) : b.school.localeCompare(a.school));
+        currentSort["school"] = order;
+      } else if (category === 'school_state') {
+        sorted.sort((a, b) => {
+          const stateA = getState(a.school), stateB = getState(b.school);
+          return order === 'asc' ? stateA.localeCompare(stateB) : stateB.localeCompare(stateA);
         });
-
-        populateTable();
-        drawLines();
-    </script>
+        currentSort["school"] = order === 'asc' ? 'state_asc' : 'state_desc';
+      } else if (category === 'sport') {
+        sorted.sort((a, b) => order === 'asc' ? a.sport.localeCompare(b.sport) : b.sport.localeCompare(a.sport));
+        currentSort["sport"] = order;
+      }
+      athletes.length = 0;
+      athletes.push(...sorted);
+      populateTable();
+    }
+    
+    // Dropdown toggle.
+    document.querySelectorAll("th").forEach(th => {
+      th.addEventListener("click", function(e) {
+        if (e.target.tagName.toLowerCase() === "button") return;
+        const menu = th.querySelector(".sort-menu");
+        if (menu) {
+          if (currentDropdown === menu && menu.style.display === "block") {
+            hideDropdown();
+          } else {
+            hideDropdown();
+            showDropdown(th);
+          }
+        }
+        e.stopPropagation();
+      });
+    });
+    document.addEventListener("click", () => { hideDropdown(); });
+    
+    async function drawSingleAthlete(athlete) {
+      let hometownCoords = athlete.hometownCoords;
+      let schoolCoords = athlete.schoolCoords;
+      if (!hometownCoords) {
+        hometownCoords = await getCoordinates(athlete.hometown);
+      }
+      if (!schoolCoords) {
+        schoolCoords = await getCoordinates(athlete.school);
+      }
+      if (hometownCoords && schoolCoords) {
+        if (!loadingBarHidden) {
+          document.getElementById("loadingBar").style.display = "none";
+          loadingBarHidden = true;
+        }
+        drawCurvedLine(hometownCoords, schoolCoords);
+        addDots(hometownCoords, schoolCoords);
+      }
+    }
+    
+    function drawCurvedLine(hometown, school) {
+      const midpoint = [(hometown[0] + school[0]) / 2, (hometown[1] + school[1]) / 2 + 5];
+      const lineData = [hometown, midpoint, school].map(d => projection(d));
+      let line = svg.append("path")
+        .datum(lineData)
+        .attr("class", "line")
+        .attr("d", d3.line().curve(d3.curveBasis))
+        .attr("stroke-dasharray", function() { return this.getTotalLength(); })
+        .attr("stroke-dashoffset", function() { return this.getTotalLength(); });
+      if (animationEnabled) {
+        line.transition().duration(2000).ease(d3.easeLinear).attr("stroke-dashoffset", 0);
+      } else {
+        line.attr("stroke-dashoffset", 0);
+      }
+    }
+    
+    function addDots(hometown, school) {
+      svg.append("circle")
+        .attr("class", "dot")
+        .attr("cx", projection(hometown)[0])
+        .attr("cy", projection(hometown)[1])
+        .attr("r", 3);
+      svg.append("circle")
+        .attr("class", "dot")
+        .attr("cx", projection(school)[0])
+        .attr("cy", projection(school)[1])
+        .attr("r", 3);
+    }
+    
+    // Animation Control.
+    const animationControlButton = document.getElementById("animationControlButton");
+    animationControlButton.addEventListener("click", function() {
+      animationEnabled = !animationEnabled;
+      this.textContent = animationEnabled ? "Animation: On" : "Animation: Off";
+      if (animationEnabled) {
+        this.classList.add("active");
+      } else {
+        this.classList.remove("active");
+      }
+    });
+    
+    // Helper: Reset map functionality.
+    function resetMap() {
+      svg.selectAll(".line, .dot").remove();
+      loadingBarHidden = false;
+      document.getElementById("loadingBar").style.display = "flex";
+      drawLines();
+    }
+    
+    // Reset button for map.
+    const resetButton = document.getElementById("resetButton");
+    resetButton.addEventListener("click", resetMap);
+    
+    // Combined Reset Sorting.
+    function resetSorting() {
+      for (let i = athletes.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [athletes[i], athletes[j]] = [athletes[j], athletes[i]];
+      }
+      currentSort = {};
+      currentSchoolStateFilters = [];
+      currentHometownStateFilters = [];
+      currentSportFilter = "All";
+      document.querySelectorAll('.sort-menu button').forEach(btn => btn.classList.remove('active'));
+      populateTable();
+      resetMap();
+    }
+    document.getElementById("resetSortingButton").addEventListener("click", resetSorting);
+    
+    async function drawLines() {
+      if (!animationEnabled) {
+        const results = await Promise.all(athletes.map(async athlete => {
+          let hometownCoords = athlete.hometownCoords;
+          let schoolCoords = athlete.schoolCoords;
+          if (!hometownCoords) hometownCoords = await getCoordinates(athlete.hometown);
+          if (!schoolCoords) schoolCoords = await getCoordinates(athlete.school);
+          return { athlete, hometownCoords, schoolCoords };
+        }));
+        document.getElementById("loadingBar").style.display = "none";
+        loadingBarHidden = true;
+        requestAnimationFrame(() => {
+          results.forEach(result => {
+            if (result.hometownCoords && result.schoolCoords) {
+              drawCurvedLine(result.hometownCoords, result.schoolCoords);
+              addDots(result.hometownCoords, result.schoolCoords);
+            }
+          });
+        });
+      } else {
+        await Promise.all(athletes.map(athlete => drawSingleAthlete(athlete)));
+        document.getElementById("loadingBar").style.display = "none";
+        loadingBarHidden = true;
+      }
+    }
+    
+    // Initial population.
+    drawLines();
+    updateSchoolStateButtons();
+    updateHometownStateButtons();
+    populateTable();
+  </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
