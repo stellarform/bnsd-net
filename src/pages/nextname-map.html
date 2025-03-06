@@ -13,7 +13,7 @@
     * { box-sizing: border-box; }
     html, body { max-width: 100%; overflow-x: hidden; }
     body {
-      background-color: #5c5c5c;
+      background-color: #e2e2e2;
       color: white;
       font-family: 'Roboto', sans-serif;
       text-align: center;
@@ -22,7 +22,7 @@
       padding-bottom: 40px;
     }
     /* Title styling */
-    h1 { margin: 5px 0; margin-bottom: 32px; }
+    h1 { margin: 5px 0; margin-bottom: 32px; color: black; }
     /* Both map and table containers share same width settings (max-width changed to 1200px) */
     .map-container,
     .table-container {
@@ -38,7 +38,7 @@
     }
     /* Map controls: revert to original colors */
     .map-button-bar {
-      background-color: #2b2b2b;
+      background-color: #1a1a1a;
       padding: 10px;
       display: flex;
       align-items: center;
@@ -47,7 +47,7 @@
     .button-group { display: flex; gap: 10px; }
     .button-group.right { margin-left: auto; }
     .map-button {
-      background-color: #2b2b2b;
+      background-color: #1a1a1a;
       border: none;
       border-radius: 4px;
       padding: 8px 12px;
@@ -58,19 +58,25 @@
       font-weight: 300;
       font-family: Roboto;
     }
-    .map-button:hover { background-color: #777; }
+    .map-button:hover { background-color: #3e3e3e; }
     svg { width: 100%; height: auto; display: block; }
     .map { fill: black; stroke: #444; stroke-width: 0.5; }
     .line {
       fill: none;
-      stroke: rgb(255, 255, 255);
       stroke-width: 1.5;
       stroke-linecap: round;
     }
     .dot {
-      fill: rgb(255, 255, 255);
-      stroke: rgb(255, 255, 255);
       stroke-width: 1;
+    }
+    /* Updated Dot Colors */
+    .dot.hometown {
+      fill: #f69999;
+      stroke: #f69999;
+    }
+    .dot.school {
+      fill: #b9e096;
+      stroke: #b9e096;
     }
     /* Loading overlay */
     #loadingBar {
@@ -115,7 +121,7 @@
       border-spacing: 0;
       border-radius: 10px;
       overflow: hidden;
-      background-color: #444;
+      background-color: #404040;
     }
     th, td {
       padding: 12px 16px;
@@ -127,7 +133,7 @@
     /* Remove bottom border on last row */
     table tr:last-child td { border-bottom: none; }
     thead th {
-      background-color: #2b2b2b;
+      background-color: #1a1a1a;
       color: white;
       font-size: 11pt;
       font-weight: 500;
@@ -135,45 +141,58 @@
       padding: 12px 16px;
       position: relative;
     }
+    /* Updated header text colors */
+    #hometownHeader { color: #f69999; }
+    #schoolHeader { color: #b9e096; }
+    /* Update table cell text colors for Hometown (col 3) and School (col 4) */
+    table td:nth-child(3) { color: #f69999; }
+    table td:nth-child(4) { color: #b9e096; }
+    /* Alternate row shading: starting at the 2nd row of tbody, every even row's cells in columns 2-5 get background #363636 */
+    table tbody tr:nth-child(even) td:nth-child(n+2):nth-child(-n+5) {
+      background-color: #363636;
+    }
     /* First column (isolate) styling */
     th.isolate-header,
     td.isolate-cell {
-      background-color: #2b2b2b;
+      background-color: #1a1a1a;
       width: 60px;
+      height: 60px;
       text-align: center;
       padding: 0;
     }
-    /* Isolate buttons: fill entire cell, no hover effect, text color #7a7a7a */
+    /* Isolate buttons */
     .isolate-button {
       width: 100%;
       height: 100%;
       display: block;
-      background-color: #2b2b2b;
+      background-color: #1a1a1a;
       border: none;
-      color: #7a7a7a;
+      color: #464646;
       font-family: Roboto;
       font-size: 9pt;
       cursor: pointer;
       transition: none;
       margin: 0;
-      padding: 8px 0;
+      padding: 10px 0;
     }
-    /* When selected (unselect), same styling as unselected */
     .isolate-button.selected {
-      background-color: #2b2b2b;
-      color: #7a7a7a;
+      background-color: #1a1a1a;
+      color: #464646;
     }
-    /* Table reset button (in the isolate header) */
+    .isolate-button:hover {
+      background-color: #909090;
+      color: #464646;
+    }
     #resetSortingButton {
-      background-color: #2b2b2b;
-      color: #7a7a7a;
+      background-color: #1a1a1a;
+      color: #464646;
     }
     th.active-sort { background-color: #333; }
     /* Dropdown menu styling */
     .sort-menu {
       display: none;
       position: absolute;
-      background-color: #2b2b2b;
+      background-color: #1a1a1a;
       padding: 8px 0;
       border-radius: 0 0 8px 8px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.2);
@@ -208,10 +227,9 @@
       border-bottom: 0px solid #555;
       margin-bottom: 5px;
     }
-    /* Grey out non-selected rows more (opacity reduced to 0.3) */
+    /* Grey out non-selected rows */
     .greyed { opacity: 0.3; }
-    /* Active isolated row: selected row gets a lighter grey background */
-    .active-isolated { background-color: #888; }
+    .active-isolated { background-color: #1a1a1a; }
     /* Mobile styles */
     @media (max-width: 600px) {
       h1 { font-size: 22pt; }
@@ -233,7 +251,7 @@
 <body>
   <!-- SVG Logo -->
   <svg id="Layer_1" style="height: 1.25em; vertical-align: middle; margin: 0 auto 5px auto;" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 99.9 12.44">
-    <path fill="white" d="
+    <path fill="black" d="
       M8.49 8.42 L2.31 0 L0 0 L0 12.42 L2.37 12.42 L2.37 3.97 L8.55 12.42 L10.86 12.42 L10.86 0 L8.49 0 Z
       M12.53 12.42 L21.95 12.42 L21.95 10.1 L14.9 10.1 L14.9 7.37 L21.2 7.37 L21.2 5.03 L14.9 5.03 L14.9 2.32 L21.95 2.32 L21.95 0 L12.53 0 Z
       M37.7 2.3 L41.65 2.3 L41.65 12.42 L44.02 12.42 L44.02 2.3 L47.97 2.3 L47.97 0 L37.7 0 Z
@@ -400,6 +418,7 @@
     
     // Create main SVG groups.
     const svg = d3.select("#map");
+    const defs = svg.append("defs"); // For gradients
     const gAll = svg.append("g");
     const gMap = gAll.append("g").attr("id", "gMap");
     const gOverlay = gAll.append("g").attr("id", "gOverlay");
@@ -755,20 +774,17 @@
     ];
     
     // Center the map container on the device viewport and zoom in on the athlete's midpoint.
-    // This will recenter the visible map container (scrolling it into view) as well.
     function centerOnAthlete(athlete) {
       const projHometown = projection(athlete.hometownCoords);
       const projSchool = projection(athlete.schoolCoords);
       if (!projHometown || !projSchool) return;
       const avgX = (projHometown[0] + projSchool[0]) / 2;
       const avgY = (projHometown[1] + projSchool[1]) / 2;
-      const s = 1.5; // zoom scale for isolation; adjust if needed
-      // Calculate translation so that the scaled midpoint lands at (500,300)
+      const s = 1.5;
       const tx = 500 - s * avgX;
       const ty = 300 - s * avgY;
       svg.transition().duration(500)
          .call(zoomBehavior.transform, d3.zoomIdentity.translate(tx, ty).scale(s));
-      // Also scroll the map container into view at the center of the viewport.
       document.querySelector('.map-container').scrollIntoView({
         behavior: 'smooth',
         block: 'center',
@@ -776,7 +792,7 @@
       });
     }
     
-    // Draw a curved line.
+    // Draw a curved line with a gradient.
     function drawCurvedLine(hometown, school, instant = false) {
       const projHometown = projection(hometown);
       const projSchool = projection(school);
@@ -784,18 +800,41 @@
       let midX = (projHometown[0] + projSchool[0]) / 2;
       let midY = (projHometown[1] + projSchool[1]) / 2;
       let offset = 45;
-      // Separate control for Hawaii.
       if (hometown[0] < -154 && hometown[1] < 22 && school[0] < -154 && school[1] < 22) {
         offset = 25;
       }
       midY = midY - offset;
       const lineData = [projHometown, [midX, midY], projSchool];
+      
+      // Create a unique gradient ID.
+      const gradientId = "grad" + Math.random().toString(36).substring(2, 9);
+      
+      // Append a new linearGradient element to defs.
+      const gradient = defs.append("linearGradient")
+        .attr("id", gradientId)
+        .attr("gradientUnits", "userSpaceOnUse")
+        .attr("x1", projHometown[0])
+        .attr("y1", projHometown[1])
+        .attr("x2", projSchool[0])
+        .attr("y2", projSchool[1]);
+      
+      // Define the gradient stops.
+      gradient.append("stop")
+        .attr("offset", "0%")
+        .attr("stop-color", "#f69999");
+      gradient.append("stop")
+        .attr("offset", "100%")
+        .attr("stop-color", "#b9e096");
+      
+      // Draw the line using the gradient stroke.
       let line = gOverlay.append("path")
         .datum(lineData)
         .attr("class", "line")
         .attr("d", lineGenerator)
+        .attr("stroke", "url(#" + gradientId + ")")
         .attr("stroke-dasharray", function() { return this.getTotalLength(); })
         .attr("stroke-dashoffset", function() { return this.getTotalLength(); });
+        
       if (animationEnabled && !instant) {
         line.transition().duration(750).ease(d3.easeLinear).attr("stroke-dashoffset", 0);
       } else {
@@ -803,20 +842,20 @@
       }
     }
     
-    // Add dots.
+    // Add dots with different classes for hometown and school.
     function addDots(hometown, school) {
       const projHometown = projection(hometown);
       const projSchool = projection(school);
       if (projHometown) {
         gOverlay.append("circle")
-          .attr("class", "dot")
+          .attr("class", "dot hometown")
           .attr("cx", projHometown[0])
           .attr("cy", projHometown[1])
           .attr("r", 1);
       }
       if (projSchool) {
         gOverlay.append("circle")
-          .attr("class", "dot")
+          .attr("class", "dot school")
           .attr("cx", projSchool[0])
           .attr("cy", projSchool[1])
           .attr("r", 1);
@@ -845,7 +884,6 @@
           }
         });
       } else {
-        // Clear any previously scheduled timeouts.
         pendingTimeouts.forEach(id => clearTimeout(id));
         pendingTimeouts = [];
         athletes.forEach((athlete, i) => {
@@ -1013,35 +1051,28 @@
         const isolateBtn = document.createElement("button");
         isolateBtn.className = "isolate-button";
         
-        // Set button text based on whether this athlete is isolated.
         if (athlete === isolatedAthlete) {
           isolateBtn.textContent = "Unselect";
           isolateBtn.classList.add("selected");
         } else {
-          isolateBtn.textContent = "Isolate";
+          isolateBtn.textContent = "Select";
         }
         
         isolateBtn.onclick = function() {
-          // Remove any running transitions.
           gOverlay.selectAll(".line, .dot").interrupt().remove();
-          // Clear any pending timeouts to stop further animations.
           pendingTimeouts.forEach(id => clearTimeout(id));
           pendingTimeouts = [];
           
           if (athlete === isolatedAthlete) {
-            // Toggle off isolation.
             isolatedAthlete = null;
-            // Reset zoom instantly.
             svg.call(zoomBehavior.transform, d3.zoomIdentity);
             resetMap(true);
             populateTable();
           } else {
             isolatedAthlete = athlete;
-            // Draw the selected athlete's line and dots instantly.
             drawCurvedLine(athlete.hometownCoords, athlete.schoolCoords, true);
             addDots(athlete.hometownCoords, athlete.schoolCoords);
             populateTable();
-            // Center and zoom in on the athlete.
             centerOnAthlete(athlete);
           }
         };
@@ -1101,16 +1132,17 @@
       populateTable();
     }
     
-    // Dropdown toggle.
+    // Dropdown toggle with toggle functionality: if the menu is already open, close it.
     document.querySelectorAll("thead th").forEach(th => {
       th.addEventListener("click", function(e) {
+        // If the click target is a button, do nothing.
         if (e.target.tagName.toLowerCase() === "button") return;
         const menu = th.querySelector(".sort-menu");
         if (menu) {
-          if (currentDropdown === menu && menu.style.display === "block") {
+          if (menu.style.display === "block") {
             hideDropdown();
           } else {
-            hideDropdown();
+            hideDropdown(); // hide any open dropdowns
             showDropdown(th);
           }
         }
@@ -1119,7 +1151,7 @@
     });
     document.addEventListener("click", () => { hideDropdown(); });
     
-    // Reset map: accepts an "instant" flag.
+    // Reset map.
     function resetMap(instant = false) {
       gOverlay.selectAll(".line, .dot").interrupt().remove();
       loadingBarHidden = false;
@@ -1131,7 +1163,7 @@
       }
     }
     
-    // Table reset button: resets isolate mode, snaps points instantly, and resets zoom.
+    // Table reset button.
     document.getElementById("resetSortingButton").addEventListener("click", () => {
       isolatedAthlete = null;
       svg.call(zoomBehavior.transform, d3.zoomIdentity);
