@@ -618,6 +618,13 @@ const athletes = [
       const s = 1.5;
       const tx = 500 - s * avgX;
       const ty = 300 - s * avgY;
+      // Center the map on Champaign, IL with your desired zoom level.
+      const champaignCoords = [-88.2434, 40.1164];
+      const projectedCenter = projection(champaignCoords);
+      const initialScale = 2; // Adjust this zoom level as needed.
+      const tx = width / 2 - initialScale * projectedCenter[0];
+      const ty = height / 2 - initialScale * projectedCenter[1];
+svg.call(zoomBehavior.transform, d3.zoomIdentity.translate(tx, ty).scale(initialScale));
       svg.transition().duration(500)
          .call(zoomBehavior.transform, d3.zoomIdentity.translate(tx, ty).scale(s));
       document.querySelector('.map-container').scrollIntoView({
