@@ -473,16 +473,19 @@
       .style("font-size", "9pt");
     
     function getTooltipHTML(athlete) {
-      return "<div style='text-align:center;'>" +
-               "<img src='" + athlete.headshot + "' alt='headshot' style='height:60px; width:auto; display:block; margin:0 auto 5px;'>" +
-               "<strong style='color:white;'>" + athlete.name + "</strong>" +
-             "</div>" +
-             "<div style='text-align:left; margin-top:5px; font-size:9pt;'>" +
-               "<span style='color:white;'>Hometown: </span><span style='color:#f69999;'>" + athlete.hometown + "</span><br>" +
-               "<span style='color:white;'>School: </span><span style='color:#b9e096;'>" + athlete.school + "</span><br>" +
-               "<span style='color:#969696;'>School Town: </span><span style='color:#969696;'>" + athlete.schooltown + "</span><br>" +
-               "<span style='color:white;'>Sport: </span><span style='color:white;'>" + athlete.sport + "</span>" +
-             "</div>";
+    return "<div style='text-align:center;'>" +
+             "<img src='" + athlete.headshot + "' alt='headshot' style='height:60px; width:auto; display:block; margin:0 auto 5px;'>" +
+             "<strong style='color:white;'>" + athlete.name + "</strong>" +
+           "</div>" +
+           "<div style='text-align:left; margin-top:5px; font-size:9pt;'>" +
+             "<span style='color:white;'>Hometown: </span><span style='color:#f69999;'>" + athlete.hometown + "</span><br>" +
+             "<span style='color:white;'>School: </span><span style='color:#b9e096;'>" + athlete.school + "</span><br>" +
+             "<span style='color:#969696;'>School Town: </span><span style='color:#969696;'>" + athlete.schooltown + "</span><br>" +
+             "<span style='color:white;'>Sport: </span><span style='color:white;'>" + athlete.sport + "</span>" +
+           "</div>" +
+           "<div style='text-align:center; margin-top:10px;'>" +
+             "<button class='player-page-button'>Player Page</button>" +
+           "</div>";
     }
     
     function showTooltip(event, athlete) {
