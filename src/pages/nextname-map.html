@@ -53,9 +53,9 @@
       padding: 10px;
       display: flex;
       align-items: center;
-      border-left: 1px solid #555;
-      border-right: 1px solid #555;
       border-top: 1px solid #555;
+      border-left: none;
+      border-right: none;
       border-bottom: none;
       border-radius: 0 0 10px 10px;
     }
@@ -133,6 +133,7 @@
     .table-container {
       width: calc(100% - 20px);
       max-width: 1200px;
+      overflow-x: auto;
       margin: 20px auto;
     }
     table {
@@ -183,6 +184,7 @@
     td:nth-child(2) {
       padding: 0;
       width: auto !important;
+      vertical-align: bottom;
     }
     /* Isolate column styling */
     th.isolate-header,
@@ -270,6 +272,15 @@
         font-size: 8pt;
         padding: 8px 10px;
       }
+    }
+  #tooltip {
+    transition: left 0.5s ease, top 0.5s ease, transform 0.5s ease;
+  }
+    table tbody td:nth-child(3),
+    table tbody td:nth-child(4),
+    table tbody td:nth-child(5),
+    table tbody td:nth-child(6) {
+      font-size: 11pt;
     }
   </style>
 </head>
@@ -371,14 +382,14 @@
           <th id="hometownHeader">
             Hometown
             <div class="sort-menu">
-              <span class="filter-title">Filter by State:</span>
+              <span class="filter-title">Filter by Hometown:</span>
               <div id="hometownStateButtons"></div>
             </div>
           </th>
           <th id="schoolHeader">
             School
             <div class="sort-menu">
-              <span class="filter-title">Filter by State:</span>
+              <span class="filter-title">Filter by School:</span>
               <div id="schoolStateButtons"></div>
             </div>
           </th>
@@ -406,8 +417,9 @@
     // Global variables.
     let animationEnabled = true;
     let loadingBarHidden = false;
-    let currentSchoolStateFilters = [];
-    let currentHometownStateFilters = [];
+    // Replace old multiple-state filters with single selection filters:
+    let currentSchoolFilter = "All";
+    let currentHometownFilter = "All";
     let currentSportFilter = "All";
     let currentSort = {};
     let isolatedAthlete = null;
@@ -446,6 +458,20 @@
       menu.style.left = (rect.left + window.scrollX) + "px";
       menu.style.width = rect.width + "px";
       menu.style.display = "block";
+      
+      // Add hover listeners to the menu
+      menu.addEventListener("mouseenter", function() {
+        // Do nothing, keep menu open
+      });
+      menu.addEventListener("mouseleave", function(e) {
+        setTimeout(() => {
+          // If mouse is not over the menu or its parent header, hide
+          if (!menu.matches(":hover") && !currentDropdownParent.matches(":hover")) {
+            hideDropdown();
+          }
+        }, 200);
+      });
+      
       document.body.appendChild(menu);
     }
     function hideDropdown() {
@@ -461,31 +487,42 @@
     const svg = d3.select("#map");
     
     // ================= Tooltip Setup =================
-    const tooltip = d3.select("body").append("div")
-      .attr("id", "tooltip")
-      .style("position", "absolute")
-      .style("background", "#333")
-      .style("color", "#fff")
-      .style("padding", "8px")
-      .style("border-radius", "4px")
-      .style("pointer-events", "auto")
-      .style("display", "none")
-      .style("font-size", "9pt");
+const tooltip = d3.select("body").append("div")
+  .attr("id", "tooltip")
+  .style("position", "absolute")
+  .style("background", "#333")
+  .style("color", "#fff")
+  .style("padding", "8px")
+  .style("border-radius", "4px")
+  .style("pointer-events", "auto")
+  .style("display", "none")
+  .style("font-size", "9pt")
+  .on("mouseover", function() {
+    tooltipPinned = true;
+  })
+  .on("mouseout", function() {
+    tooltipPinned = false;
+    setTimeout(() => {
+      if (!tooltip.node().matches(":hover")) {
+        hideTooltip();
+      }
+    }, 200);
+  });
     
     function getTooltipHTML(athlete) {
-    return "<div style='text-align:center;'>" +
-             "<img src='" + athlete.headshot + "' alt='headshot' style='height:60px; width:auto; display:block; margin:0 auto 5px;'>" +
-             "<strong style='color:white;'>" + athlete.name + "</strong>" +
-           "</div>" +
-           "<div style='text-align:left; margin-top:5px; font-size:9pt;'>" +
-             "<span style='color:white;'>Hometown: </span><span style='color:#f69999;'>" + athlete.hometown + "</span><br>" +
-             "<span style='color:white;'>School: </span><span style='color:#b9e096;'>" + athlete.school + "</span><br>" +
-             "<span style='color:#969696;'>School Town: </span><span style='color:#969696;'>" + athlete.schooltown + "</span><br>" +
-             "<span style='color:white;'>Sport: </span><span style='color:white;'>" + athlete.sport + "</span>" +
-           "</div>" +
-           "<div style='text-align:center; margin-top:10px;'>" +
-             "<button class='player-page-button'>Player Page</button>" +
-           "</div>";
+      return "<div style='text-align:center;'>" +
+               "<img src='" + athlete.headshot + "' alt='headshot' style='height:60px; width:auto; display:block; margin:0 auto 5px;'>" +
+               "<strong style='color:white;'>" + athlete.name + "</strong>" +
+             "</div>" +
+             "<div style='text-align:left; margin-top:5px; font-size:9pt;'>" +
+               "<span style='color:white;'>Hometown: </span><span style='color:#f69999;'>" + athlete.hometown + "</span><br>" +
+               "<span style='color:white;'>School: </span><span style='color:#b9e096;'>" + athlete.school + "</span><br>" +
+               "<span style='color:#969696;'>School Town: </span><span style='color:#969696;'>" + athlete.schooltown + "</span><br>" +
+               "<span style='color:white;'>Sport: </span><span style='color:white;'>" + athlete.sport + "</span>" +
+             "</div>" +
+             "<div style='text-align:center; margin-top:10px;'>" +
+             "<a href='" + athlete.NextNameProfile + "' target='_blank' class='player-page-button' style='display:inline-block; padding:4px 8px; border: none; border-radius:4px; background-color: white; color: black; text-decoration: none; cursor: pointer; font-size:9pt;'>Player Page</a>" +
+             "</div>";
     }
     
     function showTooltip(event, athlete) {
@@ -510,9 +547,11 @@
     }
     
     function hideTooltip() {
-      tooltip.style("display", "none");
-      currentTooltipElement = null;
-      tooltipFixedCoord = null;
+  // Only hide the tooltip if it's not pinned or hovered
+  if (tooltipPinned || tooltip.node().matches(":hover")) return;
+  tooltip.style("display", "none");
+  currentTooltipElement = null;
+  tooltipFixedCoord = null;
     }
     
     document.addEventListener("click", function(e) {
@@ -543,45 +582,45 @@
         .attr("d", path);
     });
     
-// Athlete data
-const athletes = [
-  { name: "Myah Hazelton", school: "Transfer Portal", schooltown: "Blacksburg, VA", sport: "Basketball", hometown: "Baltimore, MD", schoolCoords: [-80.4139, 37.2296], hometownCoords: [-76.6122, 39.2904], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Myah_Hazelton.png?raw=true" },
-  { name: "Reece Ihenacho", school: "University of Illinois", schooltown: "Champaign, IL", sport: "Track & Field", hometown: "Fox River Grove, IL", schoolCoords: [-88.2434, 40.1164], hometownCoords: [-88.2190, 42.1700], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Reece_Ihenacho.png?raw=true" },
-  { name: "Jackson Buchanan", school: "University of Illinois", schooltown: "Champaign, IL", sport: "Golf", hometown: "Dacula, GA", schoolCoords: [-88.2434, 40.1164], hometownCoords: [-83.8112, 33.8150], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Jackson_Buchanan.png?raw=true" },
-  { name: "Luke Goode", school: "Indiana University", schooltown: "Bloomington, IN", sport: "Basketball", hometown: "Fort Wayne, IN", schoolCoords: [-86.5264, 39.1653], hometownCoords: [-85.1394, 41.0793], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Luke_Goode.png?raw=true" },
-  { name: "Clay Shelton", school: "University of the Cumberlands", schooltown: "Williamsburg, KY", sport: "Baseball", hometown: "Williamsburg, KY", schoolCoords: [-84.2290, 37.0750], hometownCoords: [-84.2290, 37.0750], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Clay_Shelton.png?raw=true" },
-  { name: "Cooper Donlin", school: "Hawaii Pacific University", schooltown: "Honolulu, HI", sport: "Baseball", hometown: "Plymouth, MI", schoolCoords: [-157.8583, 21.3069], hometownCoords: [-83.3700, 42.3711], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Cooper_Donlin.png?raw=true" },
-  { name: "Alex Rodriguez", school: "SIU Edwardsville", schooltown: "Edwardsville, IL", sport: "Baseball", hometown: "Bourbonnais, IL", schoolCoords: [-89.9740, 38.8085], hometownCoords: [-87.9340, 41.0010], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Alex_Rodriguez.png?raw=true" },
-  { name: "Dante Zamudio", school: "Cal State Northridge", schooltown: "Northridge, CA", sport: "Baseball", hometown: "Sylmar, CA", schoolCoords: [-118.5301, 34.2381], hometownCoords: [-118.4514, 34.3071], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Dante_Zamudio.png?raw=true" },
-  { name: "Cecil Lofton", school: "Southern Illinois University", schooltown: "Carbondale, IL", sport: "Baseball", hometown: "Dalton, GA", schoolCoords: [-89.2168, 37.7273], hometownCoords: [-84.9700, 34.7692], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Cecil_Lofton.png?raw=true" },
-  { name: "Coby Rogers", school: "Emporia State University", schooltown: "Emporia, KS", sport: "Baseball", hometown: "Fenton, MO", schoolCoords: [-96.1817, 38.4114], hometownCoords: [-90.4801, 38.3040], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Coby_Rogers.png?raw=true" },
-  { name: "Sophie Stephenson", school: "Loyola Marymount University", schooltown: "Los Angeles, CA", sport: "Volleyball", hometown: "Seattle, WA", schoolCoords: [-118.2437, 34.0522], hometownCoords: [-122.3321, 47.6062], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Sophie_Stephenson.png?raw=true" },
-  { name: "Bianca May", school: "University of Illinois", schooltown: "Champaign, IL", sport: "Volleyball", hometown: "Orland Park, IL", schoolCoords: [-88.2434, 40.1164], hometownCoords: [-87.9000, 41.6303], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Bianca_May.png?raw=true" },
-  { name: "Cari Bohm", school: "University of Illinois", schooltown: "Champaign, IL", sport: "Volleyball", hometown: "Ann Arbor, MI", schoolCoords: [-88.2434, 40.1164], hometownCoords: [-83.7430, 42.2808], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Cari_Bohm.png?raw=true" },
-  { name: "Peyton Fitzherbert", school: "Southeastern University", schooltown: "Lakeland, FL", sport: "Soccer", hometown: "Palm City, FL", schoolCoords: [-81.9498, 28.0395], hometownCoords: [-80.3570, 27.5731], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Peyton_Fitzherbert.png?raw=true" },
-  { name: "Anna Ritter", school: "University of Illinois", schooltown: "Champaign, IL", sport: "Golf", hometown: "New Albany, OH", schoolCoords: [-88.2434, 40.1164], hometownCoords: [-84.1960, 39.3210], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Anna_Ritter.png?raw=true" },
-  { name: "Lani White", school: "Transfer Portal", schooltown: "Blacksburg, VA", sport: "Basketball", hometown: "Irvine, CA", schoolCoords: [-80.4139, 37.2296], hometownCoords: [-117.8265, 33.6846], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Lani_White.png?raw=true" },
-  { name: "Ryan Voois", school: "University of Illinois", schooltown: "Champaign, IL", sport: "Golf", hometown: "Ladera Ranch, CA", schoolCoords: [-88.2434, 40.1164], hometownCoords: [-117.5948, 33.6064], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Ryan_Voois.png?raw=true" },
-  { name: "Nate Vargas", school: "UC Santa Barbara", schooltown: "Santa Barbara, CA", sport: "Baseball", hometown: "Rocklin, CA", schoolCoords: [-119.6982, 34.4208], hometownCoords: [-121.2373897, 38.7909072], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Nate_Vargas.png?raw=true" },
-  { name: "Maya Imoto-Eakin", school: "University of Hawaii at Hilo", schooltown: "Hilo, HI", sport: "Volleyball", hometown: "Honolulu, HI", schoolCoords: [-155.0880, 19.7073], hometownCoords: [-157.8583, 21.3069], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Maya_Imoto-Eakin.png?raw=true" },
-  { name: "Gabby Dean", school: "University of Illinois", schooltown: "Champaign, IL", sport: "Volleyball", hometown: "Columbus, IN", schoolCoords: [-88.2434, 40.1164], hometownCoords: [-85.9264, 39.2098], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Gabby_Dean.png?raw=true" },
-  { name: "Brooke Mosher", school: "University of Illinois", schooltown: "Champaign, IL", sport: "Volleyball", hometown: "Waterloo, WI", schoolCoords: [-88.2434, 40.1164], hometownCoords: [-90.2459, 43.6028], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Brooke_Mosher.png?raw=true" },
-  { name: "Dante Thompson", school: "Eastern Illinois University", schooltown: "Charleston, IL", sport: "Football", hometown: "Montgomery Village, MD", schoolCoords: [88.0686, 39.3608], hometownCoords: [-77.1667, 39.1667], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Dante_Thompson.png?raw=true" },
-  { name: "Nate Dorinsky", school: "Seton Hill University", schooltown: "Greensburg, PA", sport: "Baseball", hometown: "Columbus, OH", schoolCoords: [-79.5640, 40.2930], hometownCoords: [-82.9988, 39.9612], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Nate_Dorinsky.png?raw=true" },
-  { name: "Quincy Thornton", school: "University of Tennessee at Martin", schooltown: "Martin, TN", sport: "Baseball", hometown: "Morgantown, WV", schoolCoords: [-85.4800, 36.5000], hometownCoords: [-79.9559, 39.6295], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Quincy_Thornton.png?raw=true" },
-  { name: "Sencire Harris", school: "Transfer Portal", schooltown: "Morgantown, WV", sport: "Basketball", hometown: "North Canton, OH", schoolCoords: [-79.9559, 39.6295], hometownCoords: [-81.4403, 40.1654], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Sencire_Harris.png?raw=true" },
-  { name: "Ty Rodgers", school: "University of Illinois", schooltown: "Champaign, IL", sport: "Basketball", hometown: "Saginaw, MI", schoolCoords: [-88.2434, 40.1164], hometownCoords: [-83.9500, 43.4191], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Ty_Rodgers.png?raw=true" },
-  { name: "Lily Barry", school: "University of Illinois", schooltown: "Champaign, IL", sport: "Volleyball", hometown: "Emden, IL", schoolCoords: [-88.2434, 40.1164], hometownCoords: [-88.2500, 40.1000], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Lily_Barry.png?raw=true" },
-  { name: "Olivia McGhee", school: "University of Virginia", schooltown: "Charlottesville, VA", sport: "Basketball", hometown: "Louisa, VA", schoolCoords: [-78.4767, 38.0293], hometownCoords: [-78.1320, 37.9929], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Olivia_McGhee.png?raw=true" },
-  { name: "Kylee Sessions", school: "University of Illinois", schooltown: "Champaign, IL", sport: "Swimming & Diving", hometown: "Leesburg, VA", schoolCoords: [-88.2434, 40.1164], hometownCoords: [-77.5390, 39.1157], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Kylee_Sessions.png?raw=true" },
-  { name: "Bryce Barnes", school: "College of William & Mary", schooltown: "Williamsburg, VA", sport: "Football", hometown: "Gaithersburg, MD", schoolCoords: [-76.7075, 37.2707], hometownCoords: [-77.2014, 39.1434], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Bryce_Barnes.png?raw=true" },
-  { name: "Robert Castillo", school: "Golden West College", schooltown: "Huntington Beach, CA", sport: "Baseball", hometown: "Glendora, CA", schoolCoords: [-117.9992, 33.6603], hometownCoords: [-117.8653, 34.1367], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Robert_Castillo.png?raw=true" },
-  { name: "Merik Carter", school: "Gardner-Webb University", schooltown: "Boiling Springs, NC", sport: "Baseball", hometown: "Shelbyville, TN", schoolCoords: [-81.2305, 35.2207], hometownCoords: [-86.4543, 35.4834], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Merik_Carter.png?raw=true" },
-  { name: "Sebastian Gonzalez", school: "University of Hawaii", schooltown: "Honolulu, HI", sport: "Baseball", hometown: "Oakley, CA", schoolCoords: [-157.8583, 21.3069], hometownCoords: [-121.7124, 37.9970], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Sebastian_Gonzalez.png?raw=true" },
-  { name: "Kayla Burbage", school: "University of Illinois", schooltown: "Champaign, IL", sport: "Volleyball", hometown: "Clayton, NC", schoolCoords: [-88.2434, 40.1164], hometownCoords: [-82.9800, 35.3000], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Kayla_Burbage.png?raw=true" },
-  { name: "Easton Moore", school: "Transfer Portal", schooltown: "Rock Hill, SC", sport: "Baseball", hometown: "Zionsville, IN", schoolCoords: [-81.0251, 34.9249], hometownCoords: [-86.1292, 40.0353], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Easton_Moore.png?raw=true" }
-];
-    
+    // Athlete data
+    const athletes = [
+      { name: "Myah Hazelton", school: "Transfer Portal", schooltown: "Blacksburg, VA", sport: "Basketball", hometown: "Baltimore, MD", schoolCoords: [-80.4139, 37.2296], hometownCoords: [-76.6122, 39.2904], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Myah_Hazelton.png?raw=true", NextNameProfile: "https://nextname.io/athlete/myah-hazelton/" },
+      { name: "Reece Ihenacho", school: "University of Illinois", schooltown: "Champaign, IL", sport: "Track & Field", hometown: "Fox River Grove, IL", schoolCoords: [-88.2434, 40.1164], hometownCoords: [-88.2190, 42.1700], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Reece_Ihenacho.png?raw=true", NextNameProfile: "https://nextname.io/athlete/reece-ihenacho/" },
+      { name: "Jackson Buchanan", school: "University of Illinois", schooltown: "Champaign, IL", sport: "Golf", hometown: "Dacula, GA", schoolCoords: [-88.2434, 40.1164], hometownCoords: [-83.8112, 33.8150], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Jackson_Buchanan.png?raw=true", NextNameProfile: "https://nextname.io/athlete/jackson-buchanan/" },
+      { name: "Luke Goode", school: "Indiana University", schooltown: "Bloomington, IN", sport: "Basketball", hometown: "Fort Wayne, IN", schoolCoords: [-86.5264, 39.1653], hometownCoords: [-85.1394, 41.0793], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Luke_Goode.png?raw=true", NextNameProfile: "https://nextname.io/athlete/luke-goode/" },
+      { name: "Clay Shelton", school: "University of the Cumberlands", schooltown: "Williamsburg, KY", sport: "Baseball", hometown: "Williamsburg, KY", schoolCoords: [-84.2290, 37.0750], hometownCoords: [-84.2290, 37.0750], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Clay_Shelton.png?raw=true", NextNameProfile: "https://nextname.io/athlete/clay-shelton/" },
+      { name: "Cooper Donlin", school: "Hawaii Pacific University", schooltown: "Honolulu, HI", sport: "Baseball", hometown: "Plymouth, MI", schoolCoords: [-157.8583, 21.3069], hometownCoords: [-83.3700, 42.3711], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Cooper_Donlin.png?raw=true", NextNameProfile: "https://nextname.io/athlete/cooper-donlin/" },
+      { name: "Alex Rodriguez", school: "SIU Edwardsville", schooltown: "Edwardsville, IL", sport: "Baseball", hometown: "Bourbonnais, IL", schoolCoords: [-89.9740, 38.8085], hometownCoords: [-87.9340, 41.0010], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Alex_Rodriguez.png?raw=true", NextNameProfile: "https://nextname.io/athlete/alex-rodriguez/" },
+      { name: "Dante Zamudio", school: "Cal State Northridge", schooltown: "Northridge, CA", sport: "Baseball", hometown: "Sylmar, CA", schoolCoords: [-118.5301, 34.2381], hometownCoords: [-118.4514, 34.3071], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Dante_Zamudio.png?raw=true", NextNameProfile: "https://nextname.io/athlete/dante-zamudio/" },
+      { name: "Cecil Lofton", school: "Southern Illinois University", schooltown: "Carbondale, IL", sport: "Baseball", hometown: "Dalton, GA", schoolCoords: [-89.2168, 37.7273], hometownCoords: [-84.9700, 34.7692], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Cecil_Lofton.png?raw=true", NextNameProfile: "https://nextname.io/athlete/bryson-cecil-lofton/" },
+      { name: "Coby Rogers", school: "Emporia State University", schooltown: "Emporia, KS", sport: "Baseball", hometown: "Fenton, MO", schoolCoords: [-96.1817, 38.4114], hometownCoords: [-90.4801, 38.3040], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Coby_Rogers.png?raw=true", NextNameProfile: "https://nextname.io/athlete/coby-rogers/" },
+      { name: "Sophie Stephenson", school: "Loyola Marymount University", schooltown: "Los Angeles, CA", sport: "Volleyball", hometown: "Seattle, WA", schoolCoords: [-118.2437, 34.0522], hometownCoords: [-122.3321, 47.6062], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Sophie_Stephenson.png?raw=true", NextNameProfile: "https://nextname.io/athlete/sophie-stephenson/" },
+      { name: "Bianca May", school: "University of Illinois", schooltown: "Champaign, IL", sport: "Volleyball", hometown: "Orland Park, IL", schoolCoords: [-88.2434, 40.1164], hometownCoords: [-87.9000, 41.6303], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Bianca_May.png?raw=true", NextNameProfile: "https://nextname.io/athlete/bianca-may/" },
+      { name: "Cari Bohm", school: "University of Illinois", schooltown: "Champaign, IL", sport: "Volleyball", hometown: "Ann Arbor, MI", schoolCoords: [-88.2434, 40.1164], hometownCoords: [-83.7430, 42.2808], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Cari_Bohm.png?raw=true", NextNameProfile: "https://nextname.io/athlete/cari-bohm/" },
+      { name: "Peyton Fitzherbert", school: "Southeastern University", schooltown: "Lakeland, FL", sport: "Soccer", hometown: "Palm City, FL", schoolCoords: [-81.9498, 28.0395], hometownCoords: [-80.3570, 27.5731], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Peyton_Fitzherbert.png?raw=true", NextNameProfile: "https://nextname.io/athlete/peyton-fitzherbert/" },
+      { name: "Anna Ritter", school: "University of Illinois", schooltown: "Champaign, IL", sport: "Golf", hometown: "New Albany, OH", schoolCoords: [-88.2434, 40.1164], hometownCoords: [-84.1960, 39.3210], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Anna_Ritter.png?raw=true", NextNameProfile: "https://nextname.io/athlete/anna-ritter/" },
+      { name: "Lani White", school: "Transfer Portal", schooltown: "Blacksburg, VA", sport: "Basketball", hometown: "Irvine, CA", schoolCoords: [-80.4139, 37.2296], hometownCoords: [-117.8265, 33.6846], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Lani_White.png?raw=true", NextNameProfile: "https://nextname.io/athlete/lani-white/" },
+      { name: "Ryan Voois", school: "University of Illinois", schooltown: "Champaign, IL", sport: "Golf", hometown: "Ladera Ranch, CA", schoolCoords: [-88.2434, 40.1164], hometownCoords: [-117.5948, 33.6064], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Ryan_Voois.png?raw=true", NextNameProfile: "https://nextname.io/athlete/ryan-voois/" },
+      { name: "Nate Vargas", school: "UC Santa Barbara", schooltown: "Santa Barbara, CA", sport: "Baseball", hometown: "Rocklin, CA", schoolCoords: [-119.6982, 34.4208], hometownCoords: [-121.2373897, 38.7909072], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Nate_Vargas.png?raw=true", NextNameProfile: "https://nextname.io/athlete/nate-vargas/" },
+      { name: "Maya Imoto-Eakin", school: "University of Hawaii at Hilo", schooltown: "Hilo, HI", sport: "Volleyball", hometown: "Honolulu, HI", schoolCoords: [-155.0880, 19.7073], hometownCoords: [-157.8583, 21.3069], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Maya_Imoto-Eakin.png?raw=true", NextNameProfile: "https://nextname.io/athlete/maya-imoto-eakin/" },
+      { name: "Gabby Dean", school: "University of Illinois", schooltown: "Champaign, IL", sport: "Volleyball", hometown: "Columbus, IN", schoolCoords: [-88.2434, 40.1164], hometownCoords: [-85.9264, 39.2098], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Gabby_Dean.png?raw=true", NextNameProfile: "https://nextname.io/athlete/gabby-dean/" },
+      { name: "Brooke Mosher", school: "University of Illinois", schooltown: "Champaign, IL", sport: "Volleyball", hometown: "Waterloo, WI", schoolCoords: [-88.2434, 40.1164], hometownCoords: [-90.2459, 43.6028], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Brooke_Mosher.png?raw=true", NextNameProfile: "https://nextname.io/athlete/booke-mosher/" },
+      { name: "Dante Thompson", school: "Eastern Illinois University", schooltown: "Charleston, IL", sport: "Football", hometown: "Montgomery Village, MD", schoolCoords: [88.0686, 39.3608], hometownCoords: [-77.1667, 39.1667], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Dante_Thompson.png?raw=true", NextNameProfile: "https://nextname.io/athlete/dante-thompson/" },
+      { name: "Nate Dorinsky", school: "Seton Hill University", schooltown: "Greensburg, PA", sport: "Baseball", hometown: "Columbus, OH", schoolCoords: [-79.5640, 40.2930], hometownCoords: [-82.9988, 39.9612], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Nate_Dorinsky.png?raw=true", NextNameProfile: "https://nextname.io/athlete/nate-dorinsky/" },
+      { name: "Quincy Thornton", school: "University of Tennessee at Martin", schooltown: "Martin, TN", sport: "Baseball", hometown: "Morgantown, WV", schoolCoords: [-85.4800, 36.5000], hometownCoords: [-79.9559, 39.6295], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Quincy_Thornton.png?raw=true", NextNameProfile: "https://nextname.io/athlete/quincy-thornton/" },
+      { name: "Sencire Harris", school: "Transfer Portal", schooltown: "Morgantown, WV", sport: "Basketball", hometown: "North Canton, OH", schoolCoords: [-79.9559, 39.6295], hometownCoords: [-81.4403, 40.1654], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Sencire_Harris.png?raw=true", NextNameProfile: "https://nextname.io/athlete/sencire-harris/" },
+      { name: "Ty Rodgers", school: "University of Illinois", schooltown: "Champaign, IL", sport: "Basketball", hometown: "Saginaw, MI", schoolCoords: [-88.2434, 40.1164], hometownCoords: [-83.9500, 43.4191], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Ty_Rodgers.png?raw=true", NextNameProfile: "https://nextname.io/athlete/ty-rodgers/" },
+      { name: "Lily Barry", school: "University of Illinois", schooltown: "Champaign, IL", sport: "Volleyball", hometown: "Emden, IL", schoolCoords: [-88.2434, 40.1164], hometownCoords: [-88.2500, 40.1000], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Lily_Barry.png?raw=true", NextNameProfile: "https://nextname.io/athlete/lily-barry/" },
+      { name: "Olivia McGhee", school: "University of Virginia", schooltown: "Charlottesville, VA", sport: "Basketball", hometown: "Louisa, VA", schoolCoords: [-78.4767, 38.0293], hometownCoords: [-78.1320, 37.9929], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Olivia_McGhee.png?raw=true", NextNameProfile: "https://nextname.io/athlete/olivia-mcghee/" },
+      { name: "Kylee Sessions", school: "University of Illinois", schooltown: "Champaign, IL", sport: "Swimming & Diving", hometown: "Leesburg, VA", schoolCoords: [-88.2434, 40.1164], hometownCoords: [-77.5390, 39.1157], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Kylee_Sessions.png?raw=true", NextNameProfile: "https://nextname.io/athlete/kylee-sessions/" },
+      { name: "Bryce Barnes", school: "College of William & Mary", schooltown: "Williamsburg, VA", sport: "Football", hometown: "Gaithersburg, MD", schoolCoords: [-76.7075, 37.2707], hometownCoords: [-77.2014, 39.1434], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Bryce_Barnes.png?raw=true", NextNameProfile: "https://nextname.io/athlete/bryce-barnes/" },
+      { name: "Robert Castillo", school: "Golden West College", schooltown: "Huntington Beach, CA", sport: "Baseball", hometown: "Glendora, CA", schoolCoords: [-117.9992, 33.6603], hometownCoords: [-117.8653, 34.1367], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Robert_Castillo.png?raw=true", NextNameProfile: "https://nextname.io/athlete/robert-castillo/" },
+      { name: "Merik Carter", school: "Gardner-Webb University", schooltown: "Boiling Springs, NC", sport: "Baseball", hometown: "Shelbyville, TN", schoolCoords: [-81.2305, 35.2207], hometownCoords: [-86.4543, 35.4834], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Merik_Carter.png?raw=true", NextNameProfile: "https://nextname.io/athlete/merik-carter/" },
+      { name: "Sebastian Gonzalez", school: "University of Hawaii", schooltown: "Honolulu, HI", sport: "Baseball", hometown: "Oakley, CA", schoolCoords: [-157.8583, 21.3069], hometownCoords: [-121.7124, 37.9970], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Sebastian_Gonzalez.png?raw=true", NextNameProfile: "https://nextname.io/athlete/sebastian-gonzalez/" },
+      { name: "Kayla Burbage", school: "University of Illinois", schooltown: "Champaign, IL", sport: "Volleyball", hometown: "Clayton, NC", schoolCoords: [-88.2434, 40.1164], hometownCoords: [-82.9800, 35.3000], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Kayla_Burbage.png?raw=true", NextNameProfile: "https://nextname.io/athlete/kayla-burbage/" },
+      { name: "Easton Moore", school: "Transfer Portal", schooltown: "Rock Hill, SC", sport: "Baseball", hometown: "Zionsville, IN", schoolCoords: [-81.0251, 34.9249], hometownCoords: [-86.1292, 40.0353], headshot: "https://github.com/stellarform/nextname-map/blob/main/headshots/Easton_Moore.png?raw=true", NextNameProfile: "https://nextname.io/athlete/easton-moore/" }
+    ];
+        
     // ================= Updated addDots Function =================
     function addDots(athlete) {
       const projHometown = projection(athlete.hometownCoords);
@@ -604,6 +643,17 @@ const athletes = [
               addDots(athlete);
               tooltip.html(getTooltipHTML(athlete))
                      .style("display", "block");
+              
+              const mapRect = document.getElementById("map").getBoundingClientRect();
+              const controls = document.querySelector(".map-container .map-button-bar:not(.bottom)");
+              const controlsRect = controls.getBoundingClientRect();
+              const centerX = mapRect.left + mapRect.width / 2;
+              const newY = controlsRect.bottom;
+              tooltip.style("transition", "none");
+              tooltip.style("left", centerX + "px")
+                     .style("top", newY + "px")
+                     .style("transform", "translate(-50%, 0)");
+              
               populateTable();
               centerOnAthlete(athlete);
           })
@@ -640,6 +690,17 @@ const athletes = [
               addDots(athlete);
               tooltip.html(getTooltipHTML(athlete))
                      .style("display", "block");
+              
+              const mapRect = document.getElementById("map").getBoundingClientRect();
+              const controls = document.querySelector(".map-container .map-button-bar:not(.bottom)");
+              const controlsRect = controls.getBoundingClientRect();
+              const centerX = mapRect.left + mapRect.width / 2;
+              const newY = controlsRect.bottom;
+              tooltip.style("transition", "none");
+              tooltip.style("left", centerX + "px")
+                     .style("top", newY + "px")
+                     .style("transform", "translate(-50%, 0)");
+              
               populateTable();
               centerOnAthlete(athlete);
           })
@@ -724,34 +785,38 @@ const athletes = [
       return parts.length > 1 ? parts[1].trim() : '';
     }
     
-    function updateSchoolStateButtons() {
+    // ================= Replace the old updateSchoolStateButtons function =================
+    function updateSchoolFilterButtons() {
       const container = document.getElementById("schoolStateButtons");
       container.innerHTML = "";
+      // Create "All" button
+      const allBtn = document.createElement("button");
+      allBtn.textContent = "All";
+      if (currentSchoolFilter === "All") allBtn.classList.add("active");
+      allBtn.onclick = function(e) {
+        e.stopPropagation();
+        currentSchoolFilter = "All";
+        updateSchoolFilterButtons();
+        populateTable();
+        hideDropdown();
+      };
+      container.appendChild(allBtn);
+      
       let base = athletes;
       if (currentSportFilter !== "All") {
         base = base.filter(a => a.sport === currentSportFilter);
       }
-      if (currentHometownStateFilters.length > 0) {
-        base = base.filter(a => currentHometownStateFilters.includes(getState(a.hometown)));
-      }
-      const stateSet = new Set();
-      base.forEach(athlete => {
-        const state = getState(athlete.school);
-        if (state) stateSet.add(state);
-      });
-      stateSet.forEach(state => {
+      let schoolSet = new Set();
+      base.forEach(a => schoolSet.add(a.school));
+      const schools = Array.from(schoolSet).sort();
+      schools.forEach(school => {
         const btn = document.createElement("button");
-        btn.textContent = state;
-        if (currentSchoolStateFilters.includes(state)) btn.classList.add("active");
+        btn.textContent = school;
+        if (currentSchoolFilter === school) btn.classList.add("active");
         btn.onclick = function(e) {
           e.stopPropagation();
-          if (currentSchoolStateFilters.includes(state)) {
-            currentSchoolStateFilters = currentSchoolStateFilters.filter(s => s !== state);
-            btn.classList.remove("active");
-          } else {
-            currentSchoolStateFilters.push(state);
-            btn.classList.add("active");
-          }
+          currentSchoolFilter = school;
+          updateSchoolFilterButtons();
           populateTable();
           hideDropdown();
         };
@@ -759,34 +824,38 @@ const athletes = [
       });
     }
     
-    function updateHometownStateButtons() {
+    // ================= Replace the old updateHometownStateButtons function =================
+    function updateHometownFilterButtons() {
       const container = document.getElementById("hometownStateButtons");
       container.innerHTML = "";
+      // Create "All" button
+      const allBtn = document.createElement("button");
+      allBtn.textContent = "All";
+      if (currentHometownFilter === "All") allBtn.classList.add("active");
+      allBtn.onclick = function(e) {
+        e.stopPropagation();
+        currentHometownFilter = "All";
+        updateHometownFilterButtons();
+        populateTable();
+        hideDropdown();
+      };
+      container.appendChild(allBtn);
+      
       let base = athletes;
       if (currentSportFilter !== "All") {
         base = base.filter(a => a.sport === currentSportFilter);
       }
-      if (currentSchoolStateFilters.length > 0) {
-        base = base.filter(a => currentSchoolStateFilters.includes(getState(a.school)));
-      }
-      const stateSet = new Set();
-      base.forEach(athlete => {
-        const state = getState(athlete.hometown);
-        if (state) stateSet.add(state);
-      });
-      stateSet.forEach(state => {
+      let hometownSet = new Set();
+      base.forEach(a => hometownSet.add(a.hometown));
+      const hometowns = Array.from(hometownSet).sort();
+      hometowns.forEach(hometown => {
         const btn = document.createElement("button");
-        btn.textContent = state;
-        if (currentHometownStateFilters.includes(state)) btn.classList.add("active");
+        btn.textContent = hometown;
+        if (currentHometownFilter === hometown) btn.classList.add("active");
         btn.onclick = function(e) {
           e.stopPropagation();
-          if (currentHometownStateFilters.includes(state)) {
-            currentHometownStateFilters = currentHometownStateFilters.filter(s => s !== state);
-            btn.classList.remove("active");
-          } else {
-            currentHometownStateFilters.push(state);
-            btn.classList.add("active");
-          }
+          currentHometownFilter = hometown;
+          updateHometownFilterButtons();
           populateTable();
           hideDropdown();
         };
@@ -820,11 +889,12 @@ const athletes = [
       if (currentSportFilter !== "All") {
         filteredAthletes = filteredAthletes.filter(a => a.sport === currentSportFilter);
       }
-      if (currentSchoolStateFilters.length > 0) {
-        filteredAthletes = filteredAthletes.filter(a => currentSchoolStateFilters.includes(getState(a.school)));
+      // Replace state-based filtering with complete string matching.
+      if (currentSchoolFilter !== "All") {
+        filteredAthletes = filteredAthletes.filter(a => a.school === currentSchoolFilter);
       }
-      if (currentHometownStateFilters.length > 0) {
-        filteredAthletes = filteredAthletes.filter(a => currentHometownStateFilters.includes(getState(a.hometown)));
+      if (currentHometownFilter !== "All") {
+        filteredAthletes = filteredAthletes.filter(a => a.hometown === currentHometownFilter);
       }
       
       if (isolatedAthlete) {
@@ -883,13 +953,17 @@ const athletes = [
         playerPageCell.className = "isolate-cell";
         const playerPageBtn = document.createElement("button");
         playerPageBtn.className = "isolate-button";
-        // Removed inline color style to use default text color
         playerPageBtn.innerHTML = "Player<br>Page";
         playerPageCell.appendChild(playerPageBtn);
+        playerPageBtn.addEventListener("click", function(e) {
+            e.stopPropagation();
+            window.open(athlete.NextNameProfile, "_blank");
+        });
       });
       updateActiveStates();
-      updateSchoolStateButtons();
-      updateHometownStateButtons();
+      // Use the new update functions for filters.
+      updateSchoolFilterButtons();
+      updateHometownFilterButtons();
     }
     
     function sortTableButton(category, order, btnElement) {
@@ -950,6 +1024,23 @@ const athletes = [
         e.stopPropagation();
       });
     });
+document.querySelectorAll("thead th").forEach(th => {
+  if (th.querySelector(".sort-menu")) {
+    th.addEventListener("mouseenter", function(e) {
+      // Hide any currently open menu and show this one
+      hideDropdown();
+      showDropdown(th);
+    });
+    th.addEventListener("mouseleave", function(e) {
+      setTimeout(() => {
+        // If neither the header nor its dropdown is being hovered, hide the menu
+        if (!(th.matches(":hover") || (currentDropdown && currentDropdown.matches(":hover")))) {
+          hideDropdown();
+        }
+      }, 200);
+    });
+  }
+});
     document.addEventListener("click", () => { hideDropdown(); });
     
     function resetMap(instant = false) {
@@ -966,8 +1057,9 @@ const athletes = [
     document.getElementById("resetSortingButton").addEventListener("click", () => {
       isolatedAthlete = null;
       currentSort = {};
-      currentSchoolStateFilters = [];
-      currentHometownStateFilters = [];
+      // Reset the filters to "All"
+      currentSchoolFilter = "All";
+      currentHometownFilter = "All";
       currentSportFilter = "All";
       document.querySelectorAll('.sort-menu button').forEach(btn => btn.classList.remove('active'));
       populateTable();
@@ -989,8 +1081,9 @@ const athletes = [
       }
       isolatedAthlete = null;
       currentSort = {};
-      currentSchoolStateFilters = [];
-      currentHometownStateFilters = [];
+      // Reset filters here too.
+      currentSchoolFilter = "All";
+      currentHometownFilter = "All";
       currentSportFilter = "All";
       document.querySelectorAll('.sort-menu button').forEach(btn => btn.classList.remove('active'));
       populateTable();
@@ -1010,6 +1103,17 @@ const athletes = [
         tableContainer.style.display = "none";
         toggleTableButton.textContent = "Show Table";
       }
+      if (tooltip.style("display") === "block") {
+        const mapRect = document.getElementById("map").getBoundingClientRect();
+        const controls = document.querySelector(".map-container .map-button-bar:not(.bottom)");
+        const controlsRect = controls.getBoundingClientRect();
+        const centerX = mapRect.left + mapRect.width / 2;
+        const newY = controlsRect.bottom;
+        tooltip.style("transition", "none");
+        tooltip.style("left", centerX + "px")
+               .style("top", newY + "px")
+               .style("transform", "translate(-50%, 0)");
+      }
     });
     
     // Bottom bar: Reset button logic.
@@ -1017,18 +1121,26 @@ const athletes = [
     bottomResetButton.addEventListener("click", resetSorting);
     
     drawLines();
-    updateSchoolStateButtons();
-    updateHometownStateButtons();
+    // Call new filter update functions on startup.
+    updateSchoolFilterButtons();
+    updateHometownFilterButtons();
     populateTable();
     
+    // ---------------- Updated Zoom Behavior ----------------
     const zoomBehavior = d3.zoom()
       .scaleExtent([0.5, 5])
       .on("zoom", (event) => {
         gAll.attr("transform", event.transform);
-        if (tooltip.style("display") === "block" && !tooltipPinned && tooltipFixedCoord) {
-          tooltip.style("left", event.transform.applyX(tooltipFixedCoord[0] + tooltipOffset.x) + "px")
-                 .style("top", event.transform.applyY(tooltipFixedCoord[1] + tooltipOffset.y) + "px");
+        if (tooltip.style("display") === "block" && tooltipFixedCoord) {
+          // Disable CSS transitions on tooltip during drag for immediate movement.
+          tooltip.style("transition", "none");
+          tooltip.style("left", event.transform.applyX(tooltipFixedCoord[0]) + "px")
+                 .style("top", event.transform.applyY(tooltipFixedCoord[1]) + "px");
         }
+      })
+      .on("end", (event) => {
+        // Re-enable CSS transitions after dragging ends.
+        tooltip.style("transition", "left 0.5s ease, top 0.5s ease, transform 0.5s ease");
       });
     svg.call(zoomBehavior);
     document.getElementById("zoomIn").addEventListener("click", () => {
@@ -1038,7 +1150,21 @@ const athletes = [
       svg.transition().duration(300).call(zoomBehavior.scaleBy, 0.8);
     });
     document.getElementById("resetZoom").addEventListener("click", () => {
-      svg.transition().duration(300).call(zoomBehavior.transform, d3.zoomIdentity);
+      svg.transition().duration(300)
+        .call(zoomBehavior.transform, d3.zoomIdentity)
+        .on("end", function() {
+          if (tooltip.style("display") === "block") {
+            const mapRect = document.getElementById("map").getBoundingClientRect();
+            const controls = document.querySelector(".map-container .map-button-bar:not(.bottom)");
+            const controlsRect = controls.getBoundingClientRect();
+            const centerX = mapRect.left + mapRect.width / 2;
+            const newY = controlsRect.bottom;
+            tooltip.style("transition", "none");
+            tooltip.style("left", centerX + "px")
+                   .style("top", newY + "px")
+                   .style("transform", "translate(-50%, 0)");
+          }
+        });
     });
     
     function centerOnAthlete(athlete, centerCoord) {
@@ -1103,6 +1229,7 @@ const athletes = [
         .attr("stroke-dasharray", function() { return this.getTotalLength(); })
         .attr("stroke-dashoffset", function() { return this.getTotalLength(); });
       
+      // ---------------- Updated Line Click Event ----------------
       line.on("click", function(event) {
           event.stopPropagation();
           tooltipPinned = true;
@@ -1113,11 +1240,18 @@ const athletes = [
           isolatedAthlete = athlete;
           addDots(athlete);
           tooltip.html(getTooltipHTML(athlete))
-              .style("display", "block");
+                 .style("display", "block");
+          
           const mapRect = document.getElementById("map").getBoundingClientRect();
-          tooltip.style("left", (mapRect.left + mapRect.width / 2) + "px")
-                 .style("top", (mapRect.top + 50) + "px")
+          const controls = document.querySelector(".map-container .map-button-bar:not(.bottom)");
+          const controlsRect = controls.getBoundingClientRect();
+          const centerX = mapRect.left + mapRect.width / 2;
+          const newY = controlsRect.bottom;
+          tooltip.style("transition", "none");
+          tooltip.style("left", centerX + "px")
+                 .style("top", newY + "px")
                  .style("transform", "translate(-50%, 0)");
+          
           populateTable();
           centerOnAthlete(athlete, [midX, midY]);
       })
